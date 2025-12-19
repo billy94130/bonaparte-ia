@@ -1,0 +1,2106 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bonaparte Script Vidéo | Assistant IA</title>
+    <meta name="description"
+        content="Assistant IA pour la génération de scripts vidéo immobilier de prestige - Maison Bonaparte">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ========================================
+           BONAPARTE CHATBOT - PREMIUM STYLES
+           Version adaptée pour le nouveau backend
+           ======================================== */
+
+        :root {
+            --bp-dark: #1a1612;
+            --bp-dark-brown: #2C2419;
+            --bp-medium-brown: #504838;
+            --bp-desert: #B8A88A;
+            --bp-gold: #C4A962;
+            --bp-light: #F1ECE2;
+            --bp-cream: #FAF8F5;
+            --bp-white: #FFFFFF;
+
+            --bg-primary: var(--bp-cream);
+            --bg-glass: rgba(255, 255, 255, 0.7);
+            --text-primary: var(--bp-dark);
+            --text-secondary: var(--bp-medium-brown);
+            --text-muted: rgba(80, 72, 56, 0.6);
+            --accent: var(--bp-desert);
+            --accent-glow: rgba(184, 168, 138, 0.5);
+            --border-subtle: rgba(80, 72, 56, 0.12);
+
+            --font-display: 'Cormorant Garamond', Georgia, serif;
+            --font-body: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
+
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+
+            --shadow-sm: 0 2px 8px rgba(26, 22, 18, 0.04);
+            --shadow-md: 0 4px 24px rgba(26, 22, 18, 0.08);
+            --shadow-lg: 0 8px 48px rgba(26, 22, 18, 0.12);
+            --shadow-glow: 0 0 40px var(--accent-glow);
+
+            --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-body);
+            font-weight: 400;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-primary);
+            min-height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Animated Background */
+        .background-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.5;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--bp-desert) 0%, transparent 70%);
+            top: -200px;
+            right: -100px;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--bp-gold) 0%, transparent 70%);
+            bottom: -150px;
+            left: -100px;
+            animation-delay: -7s;
+        }
+
+        .orb-3 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--bp-light) 0%, transparent 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -14s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            25% {
+                transform: translate(30px, -30px) scale(1.05);
+            }
+
+            50% {
+                transform: translate(-20px, 20px) scale(0.95);
+            }
+
+            75% {
+                transform: translate(-30px, -20px) scale(1.02);
+            }
+        }
+
+        .grain-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.03;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        }
+
+        /* App Container */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Header */
+        .header {
+            padding: var(--space-lg) var(--space-xl);
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-subtle);
+            position: relative;
+            z-index: 10;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            color: var(--bp-desert);
+            animation: pulse-glow 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                filter: drop-shadow(0 0 8px transparent);
+            }
+
+            50% {
+                filter: drop-shadow(0 0 16px var(--accent-glow));
+            }
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-title {
+            font-family: var(--font-display);
+            font-size: 1.75rem;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .logo-subtitle {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .header-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: rgba(184, 168, 138, 0.1);
+            border: 1px solid rgba(184, 168, 138, 0.2);
+            border-radius: 100px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: status-pulse 2s ease-in-out infinite;
+        }
+
+        .status-dot.loading {
+            background: var(--bp-gold);
+        }
+
+        .status-dot.error {
+            background: #D32F2F;
+        }
+
+        @keyframes status-pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 0 0 8px rgba(76, 175, 80, 0);
+            }
+        }
+
+        .status-text {
+            font-size: 0.7rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: var(--space-xl);
+            scroll-behavior: smooth;
+        }
+
+        .chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-container::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 3px;
+        }
+
+        .chat-messages {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        /* Messages */
+        .message {
+            display: flex;
+            gap: var(--space-md);
+            animation: message-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-width: 85%;
+        }
+
+        @keyframes message-in {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .bot-message {
+            align-self: flex-start;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--bp-desert) 0%, var(--bp-gold) 100%);
+            color: var(--bp-white);
+            box-shadow: var(--shadow-md);
+        }
+
+        .message-avatar svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .user-message .message-avatar {
+            background: linear-gradient(135deg, var(--bp-dark-brown) 0%, var(--bp-medium-brown) 100%);
+        }
+
+        .message-content {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px 20px 20px 20px;
+            padding: var(--space-md) var(--space-lg);
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow var(--transition-smooth);
+        }
+
+        .user-message .message-content {
+            background: linear-gradient(135deg, var(--bp-dark-brown) 0%, var(--bp-dark) 100%);
+            color: var(--bp-light);
+            border-radius: 20px 4px 20px 20px;
+            border-color: transparent;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-xs);
+        }
+
+        .message-sender {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--bp-desert);
+        }
+
+        .user-message .message-sender {
+            color: var(--bp-gold);
+        }
+
+        .message-time {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        .user-message .message-time {
+            color: rgba(241, 236, 226, 0.5);
+        }
+
+        .message-text {
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .message-text p {
+            margin-bottom: var(--space-sm);
+        }
+
+        .message-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message-text strong {
+            color: var(--bp-desert);
+        }
+
+        .user-message .message-text strong {
+            color: var(--bp-gold);
+        }
+
+        /* Script Formatting - Clean rendering */
+        .message-text hr {
+            border: none;
+            border-top: 1px solid var(--bp-desert);
+            margin: var(--space-lg) 0;
+            opacity: 0.3;
+        }
+
+        .message-text h2,
+        .message-text h3 {
+            font-family: var(--font-display);
+            color: var(--bp-desert);
+            margin-top: var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+
+        /* Section headers with emojis */
+        .message-text p:has(📍),
+        .message-text p:has(📌),
+        .message-text p:has(📝),
+        .message-text p:has(🎯),
+        .message-text p:has(🔄),
+        .message-text p:has(🎬) {
+            font-weight: 600;
+            color: var(--bp-desert);
+            border-left: 3px solid var(--bp-desert);
+            padding-left: var(--space-md);
+            margin-top: var(--space-lg);
+            background: rgba(184, 168, 138, 0.08);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Hook versions */
+        .message-text p:has(▸) {
+            background: rgba(184, 168, 138, 0.05);
+            padding: var(--space-md);
+            border-radius: 8px;
+            margin: var(--space-sm) 0;
+            border-left: 3px solid var(--bp-gold);
+        }
+
+        /* Quote styling for script text */
+        .message-text em {
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        /* Timing badges */
+        .message-text code {
+            background: var(--bp-desert);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .message-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: var(--space-sm);
+            margin-top: var(--space-md);
+        }
+
+        .message-images img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        /* Welcome Message */
+        .welcome-message .message-content {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(241, 236, 226, 0.9) 100%);
+            border: 1px solid var(--bp-desert);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-message .message-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--bp-desert), var(--bp-gold), var(--bp-desert));
+        }
+
+        .welcome-title {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: var(--space-md) !important;
+        }
+
+        .welcome-hint {
+            margin-top: var(--space-md) !important;
+            padding: var(--space-md);
+            background: rgba(184, 168, 138, 0.1);
+            border-left: 3px solid var(--bp-desert);
+            font-style: italic;
+            color: var(--text-secondary);
+        }
+
+        .welcome-steps {
+            margin-top: var(--space-md);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+        }
+
+        .welcome-step {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            background: rgba(184, 168, 138, 0.08);
+            border-radius: 8px;
+        }
+
+        .step-number {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bp-desert);
+            color: var(--bp-white);
+            border-radius: 50%;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .step-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md) 0;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        .typing-dots {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: var(--space-md) var(--space-lg);
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px 20px 20px 20px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: var(--bp-desert);
+            border-radius: 50%;
+            animation: typing-bounce 1.4s ease-in-out infinite;
+        }
+
+        .typing-dots span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing-bounce {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+                opacity: 0.4;
+            }
+
+            30% {
+                transform: translateY(-8px);
+                opacity: 1;
+            }
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: var(--space-md) var(--space-xl) var(--space-xl);
+            background: linear-gradient(180deg, transparent 0%, var(--bp-cream) 20%);
+        }
+
+        /* Image Preview Area */
+        .image-preview-area {
+            display: none;
+            margin-bottom: var(--space-md);
+            padding: var(--space-md);
+            background: var(--bp-white);
+            border: 2px dashed var(--bp-desert);
+            border-radius: 12px;
+        }
+
+        .image-preview-area.active {
+            display: block;
+        }
+
+        .image-preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .image-preview-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--bp-desert);
+        }
+
+        .image-count {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            background: rgba(184, 168, 138, 0.15);
+            padding: 2px 8px;
+            border-radius: 100px;
+        }
+
+        .image-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: var(--space-sm);
+        }
+
+        .image-preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            animation: fade-in 0.3s ease;
+        }
+
+        @keyframes fade-in {
+            0% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview-item .remove-image {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 20px;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .image-preview-item:hover .remove-image {
+            opacity: 1;
+        }
+
+        /* Input Wrapper */
+        .input-wrapper {
+            display: flex;
+            align-items: flex-end;
+            gap: var(--space-sm);
+            padding: var(--space-md);
+            background: var(--bp-white);
+            border: 2px solid var(--border-subtle);
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-smooth);
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--bp-desert);
+            box-shadow: var(--shadow-lg), 0 0 0 4px rgba(184, 168, 138, 0.1);
+        }
+
+        .input-wrapper textarea {
+            flex: 1;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--text-primary);
+            resize: none;
+            min-height: 24px;
+            max-height: 120px;
+            line-height: 1.5;
+            padding: var(--space-sm) 0;
+        }
+
+        .input-wrapper textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .input-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        /* Upload Button */
+        .upload-button {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 2px solid var(--border-subtle);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+        }
+
+        .upload-button:hover {
+            border-color: var(--bp-desert);
+            color: var(--bp-desert);
+            background: rgba(184, 168, 138, 0.1);
+        }
+
+        .upload-button.has-images {
+            border-color: var(--bp-desert);
+            background: var(--bp-desert);
+            color: var(--bp-white);
+        }
+
+        .upload-button svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .hidden-input {
+            display: none;
+        }
+
+        /* Send Button */
+        .send-button {
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--bp-desert) 0%, var(--bp-gold) 100%);
+            border: none;
+            border-radius: 10px;
+            color: var(--bp-white);
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .send-button:not(:disabled):hover {
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: var(--shadow-md), var(--shadow-glow);
+        }
+
+        .send-button svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .input-hint {
+            text-align: center;
+            margin-top: var(--space-sm);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .input-hint kbd {
+            display: inline-block;
+            padding: 2px 6px;
+            background: rgba(80, 72, 56, 0.08);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            font-family: var(--font-body);
+            font-size: 0.65rem;
+        }
+
+        /* Config Panel */
+        .config-panel {
+            background: var(--bp-white);
+            border: 2px solid var(--bp-desert);
+            border-radius: 16px;
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .config-section {
+            margin-bottom: var(--space-md);
+        }
+
+        .config-section:last-of-type {
+            margin-bottom: var(--space-lg);
+        }
+
+        .config-label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .config-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+        }
+
+        .config-btn {
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bp-cream);
+            border: 2px solid var(--border-subtle);
+            border-radius: 8px;
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+            text-align: center;
+            min-width: 80px;
+        }
+
+        .config-btn:hover {
+            border-color: var(--bp-desert);
+            color: var(--text-primary);
+        }
+
+        .config-btn.active {
+            background: var(--bp-desert);
+            border-color: var(--bp-desert);
+            color: var(--bp-white);
+        }
+
+        .config-btn small {
+            display: block;
+            font-size: 0.65rem;
+            opacity: 0.8;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: var(--space-md);
+            background: linear-gradient(135deg, var(--bp-desert) 0%, var(--bp-gold) 100%);
+            border: none;
+            border-radius: 12px;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--bp-white);
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+            box-shadow: var(--shadow-md);
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Feedback Input */
+        .feedback-input {
+            width: 100%;
+            padding: var(--space-md);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            resize: none;
+            background: var(--bp-cream);
+            color: var(--text-primary);
+            transition: all var(--transition-smooth);
+        }
+
+        .feedback-input:focus {
+            outline: none;
+            border-color: var(--bp-desert);
+            box-shadow: 0 0 0 3px rgba(184, 168, 138, 0.2);
+        }
+
+        .feedback-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Export Panel */
+        .export-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+        }
+
+        .export-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bp-white);
+            border: 2px solid var(--bp-desert);
+            border-radius: 8px;
+            font-family: var(--font-body);
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--bp-desert);
+            cursor: pointer;
+            transition: all var(--transition-smooth);
+        }
+
+        .export-btn:hover {
+            background: var(--bp-desert);
+            color: var(--bp-white);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .app-container {
+                max-width: 100%;
+            }
+
+            .header {
+                padding: var(--space-md);
+            }
+
+            .logo-title {
+                font-size: 1.4rem;
+                letter-spacing: 0.1em;
+            }
+
+            .chat-container {
+                padding: var(--space-md);
+            }
+
+            .message {
+                max-width: 95%;
+            }
+
+            .input-area {
+                padding: var(--space-md);
+            }
+
+            .image-preview-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .config-btn {
+                min-width: 70px;
+                padding: var(--space-xs) var(--space-sm);
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Script Styling - V11 - All Green Theme */
+        .script-section {
+            color: #2E7D32;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1rem 0 0.5rem 0;
+            padding: 0.5rem 0;
+            border-bottom: 2px solid #2E7D32;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .script-title {
+            color: #2E7D32;
+            font-weight: 600;
+            margin: 0.8rem 0 0.3rem 0;
+        }
+
+        .script-hook {
+            color: #388E3C;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin: 0.5rem 0 0.2rem 0;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .script-time {
+            color: #1B5E20;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin: 0.8rem 0 0.2rem 0;
+            padding: 0.3rem 0.6rem;
+            background: rgba(46, 125, 50, 0.1);
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .script-plan {
+            color: #546E7A;
+            font-style: italic;
+            font-size: 0.85rem;
+            margin: 0.2rem 0 0.5rem 0;
+            padding-left: 1rem;
+            border-left: 2px solid #4CAF50;
+        }
+
+        .script-info {
+            color: #689F38;
+            font-size: 0.8rem;
+            font-style: italic;
+            margin: 0.3rem 0;
+        }
+
+        .script-question {
+            color: #2E7D32;
+            font-weight: 500;
+            margin: 1rem 0;
+            padding: 0.8rem;
+            background: rgba(46, 125, 50, 0.08);
+            border-radius: 8px;
+            border-left: 3px solid #4CAF50;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+    <div class="grain-overlay"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20 2L38 11V29L20 38L2 29V11L20 2Z" stroke="currentColor" stroke-width="1.5" />
+                            <path d="M20 8L32 14V26L20 32L8 26V14L20 8Z" fill="currentColor" opacity="0.3" />
+                            <circle cx="20" cy="20" r="4" fill="currentColor" />
+                        </svg>
+                    </div>
+                    <div class="logo-text">
+                        <span class="logo-title">BONAPARTE</span>
+                        <span class="logo-subtitle">Script Vidéo IA</span>
+                    </div>
+                </div>
+                <div class="header-status">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span class="status-text" id="statusText">Connexion...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <main class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <!-- Welcome Message -->
+                <div class="message bot-message welcome-message">
+                    <div class="message-avatar">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2L21 7V17L12 22L3 17V7L12 2Z" stroke="currentColor" stroke-width="1.5" />
+                            <circle cx="12" cy="12" r="3" fill="currentColor" />
+                        </svg>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-sender">Bonaparte IA</span>
+                            <span class="message-time">Maintenant</span>
+                        </div>
+                        <div class="message-text">
+                            <p class="welcome-title">Bienvenue dans l'univers Bonaparte</p>
+                            <p>Je suis votre assistant pour la création de scripts vidéo immobilier de prestige. Pour
+                                générer un script parfaitement calibré, j'ai besoin de connaître votre bien.</p>
+
+                            <div class="welcome-steps">
+                                <div class="welcome-step">
+                                    <span class="step-number">1</span>
+                                    <span class="step-text">Ajoutez les <strong>photos</strong> de votre bien (cliquez
+                                        sur 📷)</span>
+                                </div>
+                                <div class="welcome-step">
+                                    <span class="step-number">2</span>
+                                    <span class="step-text">Décrivez le bien : adresse, surface, pièces,
+                                        atouts...</span>
+                                </div>
+                                <div class="welcome-step">
+                                    <span class="step-number">3</span>
+                                    <span class="step-text">Je pose quelques questions puis génère votre script</span>
+                                </div>
+                            </div>
+
+                            <p class="welcome-hint">Les images sont analysées une seule fois par une IA Vision, puis
+                                tout le
+                                dialogue se fait en texte pour plus de fluidité.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="message-avatar">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L21 7V17L12 22L3 17V7L12 2Z" stroke="currentColor" stroke-width="1.5" />
+                        <circle cx="12" cy="12" r="3" fill="currentColor" />
+                    </svg>
+                </div>
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </main>
+
+        <!-- Input Area -->
+        <footer class="input-area">
+            <!-- Configuration Panel -->
+            <div class="config-panel" id="configPanel" style="display: none;">
+                <div class="config-section">
+                    <span class="config-label">📹 Format</span>
+                    <div class="config-buttons" id="formatButtons">
+                        <button class="config-btn" data-format="teaser" onclick="setFormat('teaser')">
+                            TEASER<br><small>10-15s</small>
+                        </button>
+                        <button class="config-btn active" data-format="reel" onclick="setFormat('reel')">
+                            REEL<br><small>30-40s</small>
+                        </button>
+                        <button class="config-btn" data-format="signature" onclick="setFormat('signature')">
+                            SIGNATURE<br><small>60-90s</small>
+                        </button>
+                        <button class="config-btn" data-format="loop" onclick="setFormat('loop')">
+                            LOOP<br><small>30-45s</small>
+                        </button>
+                    </div>
+                </div>
+                <div class="config-section">
+                    <span class="config-label">🎨 Ton</span>
+                    <div class="config-buttons" id="tonButtons">
+                        <button class="config-btn active" data-ton="prestige"
+                            onclick="setTon('prestige')">Prestige</button>
+                        <button class="config-btn" data-ton="dynamique" onclick="setTon('dynamique')">Dynamique</button>
+                        <button class="config-btn" data-ton="original" onclick="setTon('original')">Original</button>
+                        <button class="config-btn" data-ton="custom" onclick="setTon('custom')">Personnalisé</button>
+                    </div>
+                </div>
+                <div class="config-section" id="customTonSection" style="display: none;">
+                    <span class="config-label">✍️ Personnalisation libre</span>
+                    <textarea id="customTonInput" class="feedback-input"
+                        placeholder="Décrivez le style souhaité... Ex: 'Ton luxueux mais accessible, avec une touche d'humour subtil'"
+                        rows="2"></textarea>
+                </div>
+                <button class="generate-btn" id="generateBtn" onclick="generateScript()">
+                    🎬 GÉNÉRER LE SCRIPT
+                </button>
+            </div>
+
+            <!-- Post-Generation Panel (shown after script is generated) -->
+            <div class="config-panel" id="postGenPanel" style="display: none;">
+                <div class="config-section">
+                    <span class="config-label">📝 Vos retours</span>
+                    <textarea id="feedbackInput" class="feedback-input"
+                        placeholder="Décrivez ce que vous souhaitez modifier... Ex: 'Plus court', 'Plus dynamique', 'Ajouter une mention sur la vue mer'"
+                        rows="2"></textarea>
+                </div>
+                <div class="config-section">
+                    <span class="config-label">📹 Changer le format</span>
+                    <div class="config-buttons" id="postFormatButtons">
+                        <button class="config-btn" data-format="teaser"
+                            onclick="setPostFormat('teaser')">TEASER</button>
+                        <button class="config-btn" data-format="reel" onclick="setPostFormat('reel')">REEL</button>
+                        <button class="config-btn" data-format="signature"
+                            onclick="setPostFormat('signature')">SIGNATURE</button>
+                        <button class="config-btn" data-format="loop" onclick="setPostFormat('loop')">LOOP</button>
+                    </div>
+                </div>
+                <div class="config-section">
+                    <span class="config-label">🎨 Changer le ton</span>
+                    <div class="config-buttons" id="postTonButtons">
+                        <button class="config-btn" data-ton="prestige"
+                            onclick="setPostTon('prestige')">Prestige</button>
+                        <button class="config-btn" data-ton="dynamique"
+                            onclick="setPostTon('dynamique')">Dynamique</button>
+                        <button class="config-btn" data-ton="original"
+                            onclick="setPostTon('original')">Original</button>
+                    </div>
+                </div>
+                <div class="export-row">
+                    <button class="generate-btn" onclick="regenerateWithFeedback()">🔄 RÉGÉNÉRER</button>
+                    <button class="export-btn primary" onclick="exportPDF()">📄 EXPORTER PDF</button>
+                </div>
+            </div>
+
+            <!-- Image Preview -->
+            <div class="image-preview-area" id="imagePreviewArea">
+                <div class="image-preview-header">
+                    <span class="image-preview-title">📷 Photos du bien</span>
+                    <span class="image-count" id="imageCount">0 photos</span>
+                </div>
+                <div class="image-preview-grid" id="imagePreviewGrid"></div>
+            </div>
+
+            <div class="input-wrapper">
+                <!-- Upload Button -->
+                <button class="upload-button" id="uploadButton" title="Ajouter des photos">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5" />
+                        <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" />
+                        <path d="M21 15L16 10L6 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    </svg>
+                </button>
+                <input type="file" id="imageInput" class="hidden-input" multiple accept="image/*">
+
+                <textarea id="messageInput" placeholder="Décrivez votre bien : adresse, surface, pièces, atouts..."
+                    rows="1"></textarea>
+
+                <div class="input-actions">
+                    <button class="send-button" id="sendButton" disabled title="Envoyer">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                            <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="input-hint">
+                <span><kbd>Entrée</kbd> pour envoyer • <kbd>Shift + Entrée</kbd> saut de ligne • Glissez-déposez vos
+                    photos</span>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        /* ========================================
+           BONAPARTE CHATBOT - APPLICATION LOGIC
+           Connecté au backend local
+           ======================================== */
+
+        // =====================================================
+        // CONFIGURATION
+        // =====================================================
+        const CONFIG = {
+            apiUrl: '/api',
+            sessionId: null
+        };
+
+        // =====================================================
+        // STATE
+        // =====================================================
+        const state = {
+            isLoading: false,
+            images: [], // { file, preview, id }
+            imagesUploaded: false,
+            analysisComplete: false
+        };
+
+        // =====================================================
+        // DOM ELEMENTS
+        // =====================================================
+        const elements = {
+            chatMessages: document.getElementById('chatMessages'),
+            messageInput: document.getElementById('messageInput'),
+            sendButton: document.getElementById('sendButton'),
+            typingIndicator: document.getElementById('typingIndicator'),
+            uploadButton: document.getElementById('uploadButton'),
+            imageInput: document.getElementById('imageInput'),
+            imagePreviewArea: document.getElementById('imagePreviewArea'),
+            imagePreviewGrid: document.getElementById('imagePreviewGrid'),
+            imageCount: document.getElementById('imageCount'),
+            statusDot: document.getElementById('statusDot'),
+            statusText: document.getElementById('statusText')
+        };
+
+        // =====================================================
+        // INITIALISATION
+        // =====================================================
+        document.addEventListener('DOMContentLoaded', init);
+
+        async function init() {
+            setupEventListeners();
+            setupTextareaAutoResize();
+            setupDragAndDrop();
+
+            // Créer une nouvelle session
+            await createSession();
+
+            setTimeout(() => elements.messageInput.focus(), 500);
+        }
+
+        async function createSession() {
+            try {
+                updateStatus('loading', 'Connexion...');
+
+                const response = await fetch(`${CONFIG.apiUrl}/session/create`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    CONFIG.sessionId = data.session_id;
+                    console.log('✅ Session créée:', CONFIG.sessionId);
+                    updateStatus('connected', 'Agent Actif');
+                } else {
+                    throw new Error('Erreur création session');
+                }
+            } catch (error) {
+                console.error('❌ Erreur connexion:', error);
+                updateStatus('error', 'Hors ligne');
+                addErrorMessage('Impossible de se connecter au serveur. Vérifiez que le backend est démarré (npm start dans le dossier backend).');
+            }
+        }
+
+        function updateStatus(status, text) {
+            elements.statusDot.className = 'status-dot';
+            if (status === 'loading') elements.statusDot.classList.add('loading');
+            if (status === 'error') elements.statusDot.classList.add('error');
+            elements.statusText.textContent = text;
+        }
+
+        // =====================================================
+        // EVENT LISTENERS
+        // =====================================================
+        function setupEventListeners() {
+            elements.sendButton.addEventListener('click', handleSend);
+            elements.messageInput.addEventListener('input', handleInputChange);
+            elements.messageInput.addEventListener('keydown', handleKeyDown);
+            elements.uploadButton.addEventListener('click', () => elements.imageInput.click());
+            elements.imageInput.addEventListener('change', handleImageSelect);
+        }
+
+        function setupTextareaAutoResize() {
+            elements.messageInput.addEventListener('input', () => {
+                elements.messageInput.style.height = 'auto';
+                elements.messageInput.style.height = Math.min(elements.messageInput.scrollHeight, 120) + 'px';
+            });
+        }
+
+        function setupDragAndDrop() {
+            const inputArea = document.querySelector('.input-area');
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(event => {
+                inputArea.addEventListener(event, e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+
+            ['dragenter', 'dragover'].forEach(event => {
+                inputArea.addEventListener(event, () => inputArea.style.background = 'rgba(184, 168, 138, 0.1)');
+            });
+
+            ['dragleave', 'drop'].forEach(event => {
+                inputArea.addEventListener(event, () => inputArea.style.background = '');
+            });
+
+            inputArea.addEventListener('drop', e => {
+                const files = [...e.dataTransfer.files].filter(f => f.type.startsWith('image/'));
+                if (files.length) processImages(files);
+            });
+        }
+
+        function handleInputChange() {
+            const hasText = elements.messageInput.value.trim().length > 0;
+            const hasImages = state.images.length > 0;
+            elements.sendButton.disabled = (!hasText && !hasImages) || state.isLoading;
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        }
+
+        // =====================================================
+        // IMAGE HANDLING
+        // =====================================================
+        function handleImageSelect(e) {
+            const files = [...e.target.files];
+            if (files.length) processImages(files);
+            e.target.value = '';
+        }
+
+        function processImages(files) {
+            for (const file of files) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    state.images.push({
+                        file,
+                        preview: e.target.result,
+                        id: Date.now() + Math.random()
+                    });
+                    updateImagePreview();
+                    handleInputChange();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function updateImagePreview() {
+            const hasImages = state.images.length > 0;
+            elements.imagePreviewArea.classList.toggle('active', hasImages);
+            elements.uploadButton.classList.toggle('has-images', hasImages);
+            elements.imageCount.textContent = `${state.images.length} photo${state.images.length > 1 ? 's' : ''}`;
+
+            elements.imagePreviewGrid.innerHTML = state.images.map(img => `
+                <div class="image-preview-item" data-id="${img.id}">
+                    <img src="${img.preview}" alt="Photo">
+                    <button class="remove-image" onclick="removeImage(${img.id})">×</button>
+                </div>
+            `).join('');
+        }
+
+        window.removeImage = function (id) {
+            state.images = state.images.filter(img => img.id !== id);
+            updateImagePreview();
+            handleInputChange();
+        };
+
+        // =====================================================
+        // MESSAGE HANDLING
+        // =====================================================
+        async function handleSend() {
+            const message = elements.messageInput.value.trim();
+            const hasImages = state.images.length > 0;
+
+            if ((!message && !hasImages) || state.isLoading || !CONFIG.sessionId) return;
+
+            elements.messageInput.value = '';
+            elements.messageInput.style.height = 'auto';
+            elements.sendButton.disabled = true;
+
+            // Si on a des images, les uploader d'abord
+            if (hasImages && !state.imagesUploaded) {
+                await uploadAndAnalyzeImages(message);
+            } else {
+                // Sinon, envoyer le message au chat
+                await sendChatMessage(message);
+            }
+        }
+
+        async function uploadAndAnalyzeImages(description) {
+            showTypingIndicator();
+            state.isLoading = true;
+
+            try {
+                // Afficher le message utilisateur
+                const imagesPreviews = state.images.map(img => img.preview);
+                addMessage(description || 'Photos envoyées', 'user', imagesPreviews);
+
+                // 1. Upload des images
+                updateStatus('loading', 'Upload...');
+
+                const formData = new FormData();
+                formData.append('session_id', CONFIG.sessionId);
+                for (const img of state.images) {
+                    formData.append('images', img.file);
+                }
+
+                const uploadResponse = await fetch(`${CONFIG.apiUrl}/bien/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const uploadData = await uploadResponse.json();
+
+                if (!uploadData.success) {
+                    throw new Error(uploadData.error || 'Erreur upload');
+                }
+
+                console.log('✅ Images uploadées:', uploadData.images_count);
+                state.imagesUploaded = true;
+
+                // Clear images
+                state.images = [];
+                updateImagePreview();
+
+                // 2. Analyser les images
+                updateStatus('loading', 'Analyse Vision...');
+
+                const analyzeResponse = await fetch(`${CONFIG.apiUrl}/bien/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: CONFIG.sessionId,
+                        description: description
+                    })
+                });
+
+                const analyzeData = await analyzeResponse.json();
+
+                if (!analyzeData.success) {
+                    throw new Error(analyzeData.error || 'Erreur analyse');
+                }
+
+                console.log('✅ Analyse terminée');
+                state.analysisComplete = true;
+                updateStatus('connected', 'Agent Actif');
+
+                // 3. Lancer l'onboarding
+                hideTypingIndicator();
+                await sendChatMessage('');
+
+            } catch (error) {
+                console.error('❌ Erreur:', error);
+                hideTypingIndicator();
+                updateStatus('error', 'Erreur');
+                addErrorMessage(error.message);
+            } finally {
+                state.isLoading = false;
+            }
+        }
+
+        async function sendChatMessage(message) {
+            showTypingIndicator();
+            state.isLoading = true;
+
+            try {
+                // Afficher le message utilisateur (si non vide)
+                if (message) {
+                    addMessage(message, 'user');
+                }
+
+                const response = await fetch(`${CONFIG.apiUrl}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: CONFIG.sessionId,
+                        message: message
+                    })
+                });
+
+                const data = await response.json();
+
+                hideTypingIndicator();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Afficher la réponse
+                addMessage(data.message, 'bot');
+
+                // Détecter si on doit afficher le panneau de config
+                if (data.config && data.config.route === 'configuration') {
+                    showConfigPanel();
+                }
+
+                // Détecter si script généré - afficher panneau post-génération
+                if (data.config && (data.config.route === 'script_genere' || data.config.script_generated)) {
+                    document.getElementById('postGenPanel').style.display = 'block';
+                    document.getElementById('configPanel').style.display = 'none';
+                }
+
+            } catch (error) {
+                console.error('❌ Erreur chat:', error);
+                hideTypingIndicator();
+                addErrorMessage(error.message);
+            } finally {
+                state.isLoading = false;
+                handleInputChange();
+            }
+        }
+
+        // =====================================================
+        // UI HELPERS
+        // =====================================================
+        function addMessage(text, type, images = null) {
+            const timestamp = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            const message = document.createElement('div');
+            message.className = `message ${type}-message`;
+
+            let imagesHtml = '';
+            if (images && images.length > 0) {
+                imagesHtml = `<div class="message-images">${images.map(src =>
+                    `<img src="${src}" alt="Photo">`
+                ).join('')}</div>`;
+            }
+
+            if (type === 'bot') {
+                message.innerHTML = `
+                    <div class="message-avatar">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L21 7V17L12 22L3 17V7L12 2Z" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-sender">Bonaparte IA</span>
+                            <span class="message-time">${timestamp}</span>
+                        </div>
+                        <div class="message-text">${formatMessageText(text)}</div>
+                    </div>
+                `;
+            } else {
+                message.innerHTML = `
+                    <div class="message-avatar">
+                        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span class="message-sender">Vous</span>
+                            <span class="message-time">${timestamp}</span>
+                        </div>
+                        <div class="message-text">${text ? `<p>${escapeHtml(text)}</p>` : '<p><em>Photos envoyées</em></p>'}</div>
+                        ${imagesHtml}
+                    </div>
+                `;
+            }
+
+            elements.chatMessages.appendChild(message);
+            scrollToBottom();
+        }
+
+        function formatMessageText(text) {
+            // Sécurité : vérifier que text existe
+            if (!text) return '<p></p>';
+
+            // Check if the text contains our custom HTML styling (from backend)
+            const hasScriptStyling = text.includes('<div class="script-');
+
+            let formatted;
+            if (hasScriptStyling) {
+                // Don't escape HTML if it contains our styling classes
+                // But still convert markdown
+                formatted = text
+                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                    .replace(/\n/g, '<br>');
+            } else {
+                // Normal messages: escape HTML then format
+                formatted = escapeHtml(text);
+                formatted = formatted.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+                formatted = formatted.replace(/\*(.+?)\*/g, '<em>$1</em>');
+                formatted = formatted.replace(/\n/g, '</p><p>');
+                formatted = `<p>${formatted}</p>`;
+            }
+            return formatted;
+        }
+
+        function addErrorMessage(errorText) {
+            const message = document.createElement('div');
+            message.className = 'message bot-message';
+            message.innerHTML = `
+                <div class="message-avatar" style="background:linear-gradient(135deg,#D32F2F,#B71C1C)">
+                    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M12 7V13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
+                </div>
+                <div class="message-content" style="border-color:rgba(211,47,47,0.3)">
+                    <div class="message-header"><span class="message-sender" style="color:#D32F2F">Erreur</span></div>
+                    <div class="message-text"><p>${escapeHtml(errorText)}</p></div>
+                </div>
+            `;
+            elements.chatMessages.appendChild(message);
+            scrollToBottom();
+        }
+
+        function showTypingIndicator() {
+            elements.typingIndicator.classList.add('active');
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            elements.typingIndicator.classList.remove('active');
+        }
+
+        function scrollToBottom() {
+            requestAnimationFrame(() => {
+                document.querySelector('.chat-container').scrollTo({ top: 99999, behavior: 'smooth' });
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // =====================================================
+        // PDF EXPORT
+        // =====================================================
+        async function exportPDF() {
+            if (!CONFIG.sessionId) {
+                addErrorMessage('Aucune session active');
+                return;
+            }
+
+            try {
+                updateStatus('loading', 'Export...');
+
+                const response = await fetch(`${CONFIG.apiUrl}/export/script/${CONFIG.sessionId}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Erreur export');
+                }
+
+                // Générer le PDF avec jsPDF (via CDN)
+                generatePDF(data.script, data.metadata);
+
+                updateStatus('connected', 'Agent Actif');
+
+            } catch (error) {
+                console.error('❌ Erreur export:', error);
+                updateStatus('error', 'Erreur');
+                addErrorMessage('Erreur lors de l\'export: ' + error.message);
+            }
+        }
+
+        function generatePDF(scriptContent, metadata) {
+            // Créer un document PDF avec le contenu bien formaté
+            const printWindow = window.open('', '_blank');
+
+            // Fonction pour convertir le markdown en HTML
+            function formatScriptForPDF(text) {
+                if (!text) return '';
+                return text
+                    // Convertir les titres **texte** en <strong>
+                    .replace(/\*\*\[([^\]]+)\]\*\*/g, '<h3 style="color: #B8A88A; margin-top: 20px; margin-bottom: 10px;">$1</h3>')
+                    .replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #B8A88A;">$1</strong>')
+                    // Convertir les italiques *texte* en <em> (pour les plans)
+                    .replace(/\*Plan: ([^*]+)\*/g, '<p style="color: #666; font-style: italic; margin-left: 20px; margin-bottom: 15px;">📹 Plan: $1</p>')
+                    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                    // Convertir les sauts de ligne
+                    .replace(/\n---\n/g, '<hr style="margin: 25px 0; border: none; border-top: 2px solid #B8A88A;">')
+                    .replace(/\n/g, '<br>')
+                    // Nettoyer les doubles <br>
+                    .replace(/<br><br>/g, '<br><br>');
+            }
+
+            const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Script Bonaparte - ${new Date().toLocaleDateString('fr-FR')}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500&display=swap');
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            color: #1a1612;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #B8A88A;
+        }
+        
+        .header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28pt;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            color: #1a1612;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            font-size: 9pt;
+            color: #504838;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+        
+        .metadata {
+            background: #FAF8F5;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-left: 3px solid #B8A88A;
+        }
+        
+        .metadata p {
+            font-size: 9pt;
+            color: #504838;
+            margin-bottom: 4px;
+        }
+        
+        .script-content {
+            font-size: 10pt;
+            line-height: 1.8;
+        }
+        
+        .script-content strong {
+            color: #B8A88A;
+            font-weight: 600;
+        }
+        
+        .script-content h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 14pt;
+            color: #B8A88A;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #e0d9cc;
+            padding-bottom: 5px;
+        }
+        
+        hr {
+            border: none;
+            border-top: 1px solid #B8A88A;
+            margin: 20px 0;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #B8A88A;
+            text-align: center;
+            font-size: 8pt;
+            color: #504838;
+        }
+        
+        @media print {
+            body { padding: 20px; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>BONAPARTE</h1>
+        <p>Script Vidéo</p>
+    </div>
+    
+    <div class="metadata">
+        <p><strong>Généré le :</strong> ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p>
+    </div>
+    
+    <div class="script-content">${formatScriptForPDF(scriptContent)}</div>
+    
+    <div class="footer">
+        <p>Maison Bonaparte — Script généré par Bonaparte IA</p>
+    </div>
+    
+    <div class="no-print" style="margin-top: 30px; text-align: center;">
+        <button onclick="window.print()" style="padding: 12px 30px; background: #B8A88A; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 12pt;">
+            Imprimer / Enregistrer PDF
+        </button>
+    </div>
+</body>
+</html>`;
+
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+        }
+
+        // Expose export function globally
+        window.exportPDF = exportPDF;
+
+        // =====================================================
+        // CONFIG PANEL FUNCTIONS
+        // =====================================================
+
+        const configState = {
+            format: 'reel',
+            ton: 'chaleureux',
+            loop: false,
+            plans: true
+        };
+
+        function setFormat(format) {
+            configState.format = format;
+            // Update button states
+            document.querySelectorAll('#formatButtons .config-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.format === format);
+            });
+            // Update server config
+            updateServerConfig();
+        }
+
+        function setTon(ton) {
+            configState.ton = ton;
+            document.querySelectorAll('#tonButtons .config-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.ton === ton);
+            });
+            // Afficher/cacher le champ personnalisation
+            const customSection = document.getElementById('customTonSection');
+            if (customSection) {
+                customSection.style.display = ton === 'custom' ? 'block' : 'none';
+            }
+            updateServerConfig();
+        }
+
+        function toggleLoop() {
+            configState.loop = !configState.loop;
+            const btn = document.getElementById('loopToggle');
+            if (btn) {
+                btn.textContent = configState.loop ? '🔄 Loop: ON' : '🔄 Loop: OFF';
+                btn.classList.toggle('active', configState.loop);
+            }
+            updateServerConfig();
+        }
+
+        function togglePlans() {
+            configState.plans = !configState.plans;
+            const btn = document.getElementById('plansToggle');
+            if (btn) {
+                btn.textContent = configState.plans ? '🎥 Plans: OUI' : '🎥 Plans: NON';
+                btn.classList.toggle('active', configState.plans);
+            }
+            updateServerConfig();
+        }
+
+        // Fonctions pour le panneau post-génération
+        async function setPostFormat(format) {
+            configState.format = format;
+            document.querySelectorAll('#postFormatButtons .config-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.format === format);
+            });
+            // Mettre à jour le serveur avec le nouveau format
+            await updateServerConfig();
+            // Régénérer automatiquement avec le nouveau format
+            showTypingIndicator();
+            await sendChatMessage(`Régénère le script en format ${format.toUpperCase()}`);
+        }
+
+        async function setPostTon(ton) {
+            configState.ton = ton;
+            document.querySelectorAll('#postTonButtons .config-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.ton === ton);
+            });
+            // Mettre à jour le serveur avec le nouveau ton
+            await updateServerConfig();
+            // Régénérer automatiquement avec le nouveau ton
+            showTypingIndicator();
+            await sendChatMessage(`Régénère le script avec le ton ${ton}`);
+        }
+
+        async function regenerateWithFeedback() {
+            const feedback = document.getElementById('feedbackInput')?.value || '';
+            const customTon = document.getElementById('customTonInput')?.value || '';
+
+            showTypingIndicator();
+            updateServerConfig();
+
+            // Construire le message de régénération
+            let message = 'Régénère le script';
+            if (feedback) message += ` avec ces retours: ${feedback}`;
+            if (customTon && configState.ton === 'custom') message += ` et ce style: ${customTon}`;
+
+            await sendChatMessage(message);
+        }
+
+        async function updateServerConfig() {
+            if (!CONFIG.sessionId) return;
+            try {
+                await fetch(`${CONFIG.apiUrl}/config`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: CONFIG.sessionId,
+                        ton: configState.ton,
+                        type_video: configState.format,
+                        loop: configState.loop,
+                        suggestions_plans: configState.plans
+                    })
+                });
+                console.log('✅ Config mise à jour');
+            } catch (e) {
+                console.error('Erreur config:', e);
+            }
+        }
+
+        async function generateScript() {
+            await updateServerConfig();
+            await sendChatMessage('Générer');
+            // Show export panel after generation
+            setTimeout(() => {
+                document.getElementById('exportPanel').style.display = 'flex';
+            }, 2000);
+        }
+
+        async function regenerateScript() {
+            await sendChatMessage('Nouvelle version');
+        }
+
+        async function shortenScript() {
+            await sendChatMessage('Raccourcir');
+        }
+
+        async function lengthenScript() {
+            await sendChatMessage('Allonger');
+        }
+
+        async function moreOriginal() {
+            await sendChatMessage('+ Original');
+        }
+
+        async function morePremium() {
+            await sendChatMessage('+ Premium');
+        }
+
+        // Show config panel after analysis
+        function showConfigPanel() {
+            document.getElementById('configPanel').style.display = 'block';
+        }
+
+        // Expose functions globally
+        window.setFormat = setFormat;
+        window.setTon = setTon;
+        window.toggleLoop = toggleLoop;
+        window.togglePlans = togglePlans;
+        window.generateScript = generateScript;
+        window.regenerateScript = regenerateScript;
+        window.shortenScript = shortenScript;
+        window.lengthenScript = lengthenScript;
+        window.moreOriginal = moreOriginal;
+        window.morePremium = morePremium;
+        window.setPostFormat = setPostFormat;
+        window.setPostTon = setPostTon;
+        window.regenerateWithFeedback = regenerateWithFeedback;
+
+        // Export for debugging
+        window.bonaparteChat = { state, config: CONFIG, configState, exportPDF, showConfigPanel };
+    </script>
+</body>
+
+</html>
