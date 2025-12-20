@@ -856,13 +856,60 @@
             font-size: 0.65rem;
         }
 
-        /* Config Panel */
+        /* Config Panel - Collapsible */
         .config-panel {
             background: var(--bp-white);
             border: 2px solid var(--bp-desert);
             border-radius: 16px;
-            padding: var(--space-md);
+            padding: 0;
             margin-bottom: var(--space-md);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .config-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md);
+            background: linear-gradient(135deg, var(--bp-desert) 0%, var(--bp-gold) 100%);
+            color: var(--bp-white);
+            cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .config-panel-header:hover {
+            filter: brightness(1.05);
+        }
+
+        .config-panel-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .config-panel-toggle {
+            font-size: 1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .config-panel.collapsed .config-panel-toggle {
+            transform: rotate(180deg);
+        }
+
+        .config-panel-content {
+            padding: var(--space-md);
+            max-height: 500px;
+            transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+            opacity: 1;
+        }
+
+        .config-panel.collapsed .config-panel-content {
+            max-height: 0;
+            padding: 0 var(--space-md);
+            opacity: 0;
         }
 
         .config-section {
@@ -1119,7 +1166,7 @@
                         </svg>
                     </div>
                     <div class="logo-text">
-                        <span class="logo-title">BONAPARTE</span>
+                        <span class="logo-title">Bonaparte</span>
                         <span class="logo-subtitle">Script Vidéo IA</span>
                     </div>
                 </div>
@@ -1196,77 +1243,92 @@
         <footer class="input-area">
             <!-- Configuration Panel -->
             <div class="config-panel" id="configPanel" style="display: none;">
-                <div class="config-section">
-                    <span class="config-label">📹 Format</span>
-                    <div class="config-buttons" id="formatButtons">
-                        <button class="config-btn" data-format="teaser" onclick="setFormat('teaser')">
-                            TEASER<br><small>10-15s</small>
-                        </button>
-                        <button class="config-btn active" data-format="reel" onclick="setFormat('reel')">
-                            REEL<br><small>30-40s</small>
-                        </button>
-                        <button class="config-btn" data-format="signature" onclick="setFormat('signature')">
-                            SIGNATURE<br><small>60-90s</small>
-                        </button>
-                        <button class="config-btn" data-format="loop" onclick="setFormat('loop')">
-                            LOOP<br><small>30-45s</small>
-                        </button>
+                <div class="config-panel-header" onclick="togglePanel('configPanel')">
+                    <span class="config-panel-title">⚙️ Configuration du script</span>
+                    <span class="config-panel-toggle">▼</span>
+                </div>
+                <div class="config-panel-content">
+                    <div class="config-section">
+                        <span class="config-label">📹 Format</span>
+                        <div class="config-buttons" id="formatButtons">
+                            <button class="config-btn" data-format="teaser" onclick="setFormat('teaser')">
+                                TEASER<br><small>10-15s</small>
+                            </button>
+                            <button class="config-btn active" data-format="reel" onclick="setFormat('reel')">
+                                REEL<br><small>30-40s</small>
+                            </button>
+                            <button class="config-btn" data-format="signature" onclick="setFormat('signature')">
+                                SIGNATURE<br><small>60-90s</small>
+                            </button>
+                            <button class="config-btn" data-format="loop" onclick="setFormat('loop')">
+                                LOOP<br><small>30-45s</small>
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div class="config-section">
-                    <span class="config-label">🎨 Ton</span>
-                    <div class="config-buttons" id="tonButtons">
-                        <button class="config-btn active" data-ton="prestige"
-                            onclick="setTon('prestige')">Prestige</button>
-                        <button class="config-btn" data-ton="dynamique" onclick="setTon('dynamique')">Dynamique</button>
-                        <button class="config-btn" data-ton="original" onclick="setTon('original')">Original</button>
-                        <button class="config-btn" data-ton="custom" onclick="setTon('custom')">Personnalisé</button>
+                    <div class="config-section">
+                        <span class="config-label">🎨 Ton</span>
+                        <div class="config-buttons" id="tonButtons">
+                            <button class="config-btn active" data-ton="prestige"
+                                onclick="setTon('prestige')">Prestige</button>
+                            <button class="config-btn" data-ton="dynamique"
+                                onclick="setTon('dynamique')">Dynamique</button>
+                            <button class="config-btn" data-ton="original"
+                                onclick="setTon('original')">Original</button>
+                            <button class="config-btn" data-ton="custom"
+                                onclick="setTon('custom')">Personnalisé</button>
+                        </div>
                     </div>
+                    <div class="config-section" id="customTonSection" style="display: none;">
+                        <span class="config-label">✍️ Personnalisation libre</span>
+                        <textarea id="customTonInput" class="feedback-input"
+                            placeholder="Décrivez le style souhaité... Ex: 'Ton luxueux mais accessible, avec une touche d'humour subtil'"
+                            rows="2"></textarea>
+                    </div>
+                    <button class="generate-btn" id="generateBtn" onclick="generateScript()">
+                        🎬 GÉNÉRER LE SCRIPT
+                    </button>
                 </div>
-                <div class="config-section" id="customTonSection" style="display: none;">
-                    <span class="config-label">✍️ Personnalisation libre</span>
-                    <textarea id="customTonInput" class="feedback-input"
-                        placeholder="Décrivez le style souhaité... Ex: 'Ton luxueux mais accessible, avec une touche d'humour subtil'"
-                        rows="2"></textarea>
-                </div>
-                <button class="generate-btn" id="generateBtn" onclick="generateScript()">
-                    🎬 GÉNÉRER LE SCRIPT
-                </button>
             </div>
 
             <!-- Post-Generation Panel (shown after script is generated) -->
-            <div class="config-panel" id="postGenPanel" style="display: none;">
-                <div class="config-section">
-                    <span class="config-label">📝 Vos retours</span>
-                    <textarea id="feedbackInput" class="feedback-input"
-                        placeholder="Décrivez ce que vous souhaitez modifier... Ex: 'Plus court', 'Plus dynamique', 'Ajouter une mention sur la vue mer'"
-                        rows="2"></textarea>
+            <div class="config-panel collapsed" id="postGenPanel" style="display: none;">
+                <div class="config-panel-header" onclick="togglePanel('postGenPanel')">
+                    <span class="config-panel-title">✏️ Modifier le script</span>
+                    <span class="config-panel-toggle">▼</span>
                 </div>
-                <div class="config-section">
-                    <span class="config-label">📹 Changer le format</span>
-                    <div class="config-buttons" id="postFormatButtons">
-                        <button class="config-btn" data-format="teaser"
-                            onclick="setPostFormat('teaser')">TEASER</button>
-                        <button class="config-btn" data-format="reel" onclick="setPostFormat('reel')">REEL</button>
-                        <button class="config-btn" data-format="signature"
-                            onclick="setPostFormat('signature')">SIGNATURE</button>
-                        <button class="config-btn" data-format="loop" onclick="setPostFormat('loop')">LOOP</button>
+                <div class="config-panel-content">
+                    <div class="config-section">
+                        <span class="config-label">📝 Vos retours</span>
+                        <textarea id="feedbackInput" class="feedback-input"
+                            placeholder="Décrivez ce que vous souhaitez modifier... Ex: 'Plus court', 'Plus dynamique', 'Ajouter une mention sur la vue mer'"
+                            rows="2"></textarea>
                     </div>
-                </div>
-                <div class="config-section">
-                    <span class="config-label">🎨 Changer le ton</span>
-                    <div class="config-buttons" id="postTonButtons">
-                        <button class="config-btn" data-ton="prestige"
-                            onclick="setPostTon('prestige')">Prestige</button>
-                        <button class="config-btn" data-ton="dynamique"
-                            onclick="setPostTon('dynamique')">Dynamique</button>
-                        <button class="config-btn" data-ton="original"
-                            onclick="setPostTon('original')">Original</button>
+                    <div class="config-section">
+                        <span class="config-label">📹 Changer le format</span>
+                        <div class="config-buttons" id="postFormatButtons">
+                            <button class="config-btn" data-format="teaser"
+                                onclick="setPostFormat('teaser')">TEASER</button>
+                            <button class="config-btn" data-format="reel" onclick="setPostFormat('reel')">REEL</button>
+                            <button class="config-btn" data-format="signature"
+                                onclick="setPostFormat('signature')">SIGNATURE</button>
+                            <button class="config-btn" data-format="loop" onclick="setPostFormat('loop')">LOOP</button>
+                        </div>
                     </div>
-                </div>
-                <div class="export-row">
-                    <button class="generate-btn" onclick="regenerateWithFeedback()">🔄 RÉGÉNÉRER</button>
-                    <button class="export-btn primary" onclick="exportPDF()">📄 EXPORTER PDF</button>
+                    <div class="config-section">
+                        <span class="config-label">🎨 Changer le ton</span>
+                        <div class="config-buttons" id="postTonButtons">
+                            <button class="config-btn" data-ton="prestige"
+                                onclick="setPostTon('prestige')">Prestige</button>
+                            <button class="config-btn" data-ton="dynamique"
+                                onclick="setPostTon('dynamique')">Dynamique</button>
+                            <button class="config-btn" data-ton="original"
+                                onclick="setPostTon('original')">Original</button>
+                        </div>
+                    </div>
+                    <div class="export-row">
+                        <button class="generate-btn" onclick="regenerateWithFeedback()">🔄 RÉGÉNÉRER</button>
+                        <button class="export-btn primary" onclick="exportPDF()">📄 EXPORTER PDF</button>
+                    </div>
                 </div>
             </div>
 
@@ -1288,7 +1350,21 @@
                         <path d="M21 15L16 10L6 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
                     </svg>
                 </button>
+                <button class="upload-button" id="docUploadButton" title="Ajouter des documents (PDF, TXT, DOC)">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z"
+                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                        <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                        <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" />
+                        <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.5"
+                            stroke-linecap="round" />
+                    </svg>
+                </button>
                 <input type="file" id="imageInput" class="hidden-input" multiple accept="image/*">
+                <input type="file" id="docInput" class="hidden-input" multiple accept=".pdf,.txt,.doc,.docx">
 
                 <textarea id="messageInput" placeholder="Décrivez votre bien : adresse, surface, pièces, atouts..."
                     rows="1"></textarea>
@@ -1331,6 +1407,7 @@
         const state = {
             isLoading: false,
             images: [], // { file, preview, id }
+            documents: [], // { file, name, type, id }
             imagesUploaded: false,
             analysisComplete: false
         };
@@ -1344,7 +1421,9 @@
             sendButton: document.getElementById('sendButton'),
             typingIndicator: document.getElementById('typingIndicator'),
             uploadButton: document.getElementById('uploadButton'),
+            docUploadButton: document.getElementById('docUploadButton'),
             imageInput: document.getElementById('imageInput'),
+            docInput: document.getElementById('docInput'),
             imagePreviewArea: document.getElementById('imagePreviewArea'),
             imagePreviewGrid: document.getElementById('imagePreviewGrid'),
             imageCount: document.getElementById('imageCount'),
@@ -1408,6 +1487,9 @@
             elements.messageInput.addEventListener('keydown', handleKeyDown);
             elements.uploadButton.addEventListener('click', () => elements.imageInput.click());
             elements.imageInput.addEventListener('change', handleImageSelect);
+            // Document upload
+            elements.docUploadButton.addEventListener('click', () => elements.docInput.click());
+            elements.docInput.addEventListener('change', handleDocSelect);
         }
 
         function setupTextareaAutoResize() {
@@ -1444,7 +1526,8 @@
         function handleInputChange() {
             const hasText = elements.messageInput.value.trim().length > 0;
             const hasImages = state.images.length > 0;
-            elements.sendButton.disabled = (!hasText && !hasImages) || state.isLoading;
+            const hasDocs = state.documents.length > 0;
+            elements.sendButton.disabled = (!hasText && !hasImages && !hasDocs) || state.isLoading;
         }
 
         function handleKeyDown(e) {
@@ -1479,18 +1562,72 @@
             }
         }
 
+        // =====================================================
+        // DOCUMENT HANDLING
+        // =====================================================
+        function handleDocSelect(e) {
+            const files = [...e.target.files];
+            if (files.length) processDocuments(files);
+            e.target.value = '';
+        }
+
+        function processDocuments(files) {
+            for (const file of files) {
+                const docType = file.name.split('.').pop().toLowerCase();
+                state.documents.push({
+                    file,
+                    name: file.name,
+                    type: docType,
+                    id: Date.now() + Math.random()
+                });
+            }
+            updateImagePreview();
+            handleInputChange();
+            elements.docUploadButton.classList.toggle('has-images', state.documents.length > 0);
+        }
+
+        window.removeDocument = function (id) {
+            state.documents = state.documents.filter(doc => doc.id !== id);
+            updateImagePreview();
+            handleInputChange();
+            elements.docUploadButton.classList.toggle('has-images', state.documents.length > 0);
+        };
+
         function updateImagePreview() {
             const hasImages = state.images.length > 0;
-            elements.imagePreviewArea.classList.toggle('active', hasImages);
+            const hasDocs = state.documents.length > 0;
+            elements.imagePreviewArea.classList.toggle('active', hasImages || hasDocs);
             elements.uploadButton.classList.toggle('has-images', hasImages);
-            elements.imageCount.textContent = `${state.images.length} photo${state.images.length > 1 ? 's' : ''}`;
 
-            elements.imagePreviewGrid.innerHTML = state.images.map(img => `
+            // Count text
+            let countText = '';
+            if (state.images.length > 0) {
+                countText += `${state.images.length} photo${state.images.length > 1 ? 's' : ''}`;
+            }
+            if (state.documents.length > 0) {
+                if (countText) countText += ' + ';
+                countText += `${state.documents.length} doc${state.documents.length > 1 ? 's' : ''}`;
+            }
+            elements.imageCount.textContent = countText || '0 fichiers';
+
+            // Images grid
+            let gridHtml = state.images.map(img => `
                 <div class="image-preview-item" data-id="${img.id}">
                     <img src="${img.preview}" alt="Photo">
                     <button class="remove-image" onclick="removeImage(${img.id})">×</button>
                 </div>
             `).join('');
+
+            // Documents (show as file icons)
+            gridHtml += state.documents.map(doc => `
+                <div class="image-preview-item doc-preview" data-id="${doc.id}" style="display:flex;align-items:center;justify-content:center;background:var(--bp-cream);font-size:0.7rem;flex-direction:column;padding:4px;">
+                    <span style="font-size:1.5rem;">📄</span>
+                    <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%;color:var(--text-secondary);">${doc.name.length > 10 ? doc.name.substring(0, 8) + '...' : doc.name}</span>
+                    <button class="remove-image" onclick="removeDocument(${doc.id})">×</button>
+                </div>
+            `).join('');
+
+            elements.imagePreviewGrid.innerHTML = gridHtml;
         }
 
         window.removeImage = function (id) {
@@ -1968,6 +2105,15 @@
             }
             updateServerConfig();
         }
+
+        // Toggle collapsible panels
+        function togglePanel(panelId) {
+            const panel = document.getElementById(panelId);
+            if (panel) {
+                panel.classList.toggle('collapsed');
+            }
+        }
+        window.togglePanel = togglePanel;
 
         function toggleLoop() {
             configState.loop = !configState.loop;
