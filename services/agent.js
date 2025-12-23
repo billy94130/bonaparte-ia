@@ -1,12 +1,66 @@
 /**
- * BONAPARTE IA - Agent V13 - Claude Sonnet 4.5
+ * BONAPARTE IA - Agent V14 - Claude Sonnet 4.5
+ * Avec chargement dynamique des documentations Format/Ton
  */
 
 const Anthropic = require('@anthropic-ai/sdk');
+const fs = require('fs');
+const path = require('path');
 const { TONS, VIDEO_TYPES, PHOTO_SUMMARY_PROMPT, CONVERSATION_PROMPT, SCRIPT_COMPLET_PROMPT, LOOP_DEFINITION } = require('../prompts/system');
+const visionService = require('./vision');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = 'claude-sonnet-4-5-20250929';
+
+// Chemins vers les documentations
+const DOCS_PATH = path.join(__dirname, '..', 'docs');
+
+/**
+ * Charge la documentation pour un format donné
+ */
+function loadFormatDoc(formatId) {
+    const formatMap = {
+        'teaser': 'TEASER.md',
+        'reel': 'REEL.md',
+        'loop': 'LOOP.md',
+        'signature': 'SIGNATURE.md'
+    };
+    const filename = formatMap[formatId] || 'SIGNATURE.md';
+    const filepath = path.join(DOCS_PATH, 'formats', filename);
+
+    try {
+        if (fs.existsSync(filepath)) {
+            console.log(`📄 Chargement doc format: ${filename}`);
+            return fs.readFileSync(filepath, 'utf-8');
+        }
+    } catch (e) {
+        console.error(`Erreur chargement ${filename}:`, e.message);
+    }
+    return '';
+}
+
+/**
+ * Charge la documentation pour un ton donné
+ */
+function loadTonDoc(tonId) {
+    const tonMap = {
+        'prestige': 'PRESTIGE.md',
+        'dynamique': 'DYNAMIQUE.md',
+        'original': 'ORIGINAL.md'
+    };
+    const filename = tonMap[tonId] || 'PRESTIGE.md';
+    const filepath = path.join(DOCS_PATH, 'tons', filename);
+
+    try {
+        if (fs.existsSync(filepath)) {
+            console.log(`📄 Chargement doc ton: ${filename}`);
+            return fs.readFileSync(filepath, 'utf-8');
+        }
+    } catch (e) {
+        console.error(`Erreur chargement ${filename}:`, e.message);
+    }
+    return '';
+}
 
 async function processMessage(session, message) {
     const phase = determinePhase(session);
@@ -110,15 +164,21 @@ async function handleConversation(session, message) {
 
     // Phrases EXACTES qui déclenchent le passage à la configuration
     const exactReadyPhrases = [
-        'ok', 'non', 'no', 'nope', 'rien', 'prêt', 'go',
+        'ok', 'non', 'no', 'nope', 'rien', 'prêt', 'go', 'oui',
         'c\'est bon', 'c\'est tout', 'c\'est top', 'parfait', 'super',
         'non merci', 'rien d\'autre', 'on passe', 'rien à ajouter',
         'non c\'est bon', 'non c\'est tout', 'non rien',
-        'c\'est ok', 'tout est bon', 'on y va', 'générer', 'generer'
+        'c\'est ok', 'tout est bon', 'on y va', 'générer', 'generer',
+        'on passe à la suite', 'on passe a la suite', 'passons à la suite',
+        'suite', 'continuer', 'on continue', 'next', 'suivant',
+        'j\'ai fini', 'j\'ai terminé', 'terminé', 'fini',
+        'non c\'est bon on passe à la suite', 'non c\'est bon on passe a la suite',
+        'on peut passer', 'on peut continuer', 'allons-y', 'let\'s go',
+        'ça me va', 'ca me va', 'nickel', 'top', 'impec', 'impeccable'
     ];
 
-    // Vérifier si c'est une validation EXACTE (pas "oui le marbre...")
-    const isExactReady = exactReadyPhrases.some(p => lower === p);
+    // Vérifier si c'est une validation (contient une des phrases)
+    const isExactReady = exactReadyPhrases.some(p => lower === p || lower.includes(p));
 
     // Si le message contient "oui" mais avec du contenu après → c'est une info à ajouter
     const startsWithYesAndHasContent = (lower.startsWith('oui ') || lower.startsWith('oui,')) && lower.length > 5;
@@ -176,23 +236,9 @@ function handleConfiguration(session, message) {
         session.pendingConfig = null;
     }
 
-    const ton = TONS.find(t => t.id === session.config.ton) || TONS[0];
-    const format = VIDEO_TYPES.find(t => t.id === session.config.type_video) || VIDEO_TYPES[3];
-
-    const infosAdded = session.additionalInfos?.length > 0
-        ? `\n\n✅ Infos: ${session.additionalInfos.join(' | ')}`
-        : '';
-
+    // On retourne juste la route - pas de message texte, le frontend affichera le panel
     return {
-        message_utilisateur: `**Configuration**
-
-Choisis tes paramètres ci-dessous !${infosAdded}
-
-📹 Format: ${format.name} (${format.duration})
-🎨 Ton: ${ton.name}
-🔄 Loop: ${session.config.loop ? 'ON' : 'OFF'}
-
-Clique sur **GÉNÉRER** !`,
+        message_utilisateur: '',  // Pas de message
         config: { route: 'configuration', settings: session.config }
     };
 }
@@ -202,49 +248,101 @@ async function handleGeneration(session, message) {
 
     const analysis = session.property.analysis || {};
     const description = session.property.description || '';
-    const ton = TONS.find(t => t.id === session.config.ton) || TONS[0];
-    const format = VIDEO_TYPES.find(t => t.id === session.config.type_video) || VIDEO_TYPES[3];
+    const tonConfig = TONS.find(t => t.id === session.config.ton) || TONS[0];
+    const formatConfig = VIDEO_TYPES.find(t => t.id === session.config.type_video) || VIDEO_TYPES[3];
     const city = extractCity(description);
-    const loopEnabled = session.config.loop === true;
+    const loopEnabled = session.config.loop === true || session.config.type_video === 'loop';
+
+    // Charger les documentations dynamiquement
+    const formatDoc = loadFormatDoc(session.config.type_video || 'signature');
+    const tonDoc = loadTonDoc(session.config.ton || 'prestige');
+
+    console.log(`📋 Format: ${formatConfig.name} | Ton: ${tonConfig.name} | Loop: ${loopEnabled}`);
 
     const userInfo = session.additionalInfos?.length > 0 ? session.additionalInfos.join('\n') : 'Aucune';
-    const propertyInfo = `Ville: ${city}\nDescription: ${description}\nStanding: ${analysis.standing || 'Luxe'}`;
-    const loopSection = loopEnabled ? LOOP_DEFINITION : '';
 
-    // Construire les détails du ton
-    const tonDetails = `FONCTION : ${ton.fonction || ton.instructions}
-RÈGLES : ${ton.regles || ton.instructions}
-EXEMPLE D'OUVERTURE : "${ton.exemple || ''}"`;
+    // Construire le contexte complet du bien
+    const propertyInfo = `
+Ville: ${city}
+Description complète: ${description}
+Analyse photos: ${JSON.stringify(analysis, null, 2)}
+Standing: ${analysis.standing || 'Luxe'}
+`;
 
     // LOOP ENDING - uniquement le connecteur
     const loopEnding = loopEnabled
-        ? `**[FIN - LOOP]**
-"...parce que"
-*Vidéo: Transition vers le premier plan.*
+        ? `[SÉQUENCE FINALE - CONNECTEUR]
+Texte : "...[connecteur seul: parce que / lorsque / là où]"
+Visuel : Transition vers le premier plan
 
-⚠️ RAPPEL : La fin = UNIQUEMENT le connecteur. PAS une phrase complète. PAS la répétition du début.`
-        : `**[FIN]**
-"[Phrase de conclusion]"
-*Vidéo: Plan final*`;
+🔁 REBOUCLE → "[Connecteur capitalisé] [phrase d'ouverture]"
 
-    // RANDOM SEED pour forcer la variété
-    const randomSeed = Date.now() % 10000;
+⚠️ La fin = UNIQUEMENT le connecteur (3-5 mots max). PAS de phrase complète.`
+        : `[SÉQUENCE FINALE]
+Texte : "[Phrase de clôture + prix si disponible]"
+Visuel : Plan final sur le bien`;
 
-    let prompt = SCRIPT_COMPLET_PROMPT
-        .replace(/{RANDOM_SEED}/g, randomSeed.toString())
-        .replace(/{PROPERTY_INFO}/g, propertyInfo)
-        .replace(/{USER_INFO}/g, userInfo)
-        .replace(/{FORMAT_NAME}/g, format.name)
-        .replace(/{FORMAT_DURATION}/g, format.duration)
-        .replace(/{TON_NAME}/g, ton.name)
-        .replace(/{TON_FONCTION}/g, ton.fonction || '')
-        .replace(/{TON_REGLES}/g, ton.regles || '')
-        .replace(/{TON_INTERDIT}/g, ton.interdit || '')
-        .replace(/{TON_EXEMPLE}/g, ton.exemple || '')
-        .replace(/{NB_PHRASES}/g, format.phrases)
-        .replace(/{LOOP_STATUS}/g, loopEnabled ? 'OUI' : 'NON')
-        .replace(/{LOOP_SECTION}/g, loopSection)
-        .replace(/{LOOP_ENDING}/g, loopEnding);
+    // RANDOM SEED pour forcer la variété (0-9)
+    const randomSeed = Date.now() % 10;
+    console.log(`🎲 SEED créativité: ${randomSeed}`);
+
+    // Construire le prompt avec les documentations
+    let prompt = `${SCRIPT_COMPLET_PROMPT}
+
+═══════════════════════════════════════════════════════════════════
+DOCUMENTATION FORMAT : ${formatConfig.name}
+═══════════════════════════════════════════════════════════════════
+
+${formatDoc}
+
+═══════════════════════════════════════════════════════════════════
+DOCUMENTATION TON : ${tonConfig.name}
+═══════════════════════════════════════════════════════════════════
+
+${tonDoc}
+
+═══════════════════════════════════════════════════════════════════
+CONTEXTE DE GÉNÉRATION
+═══════════════════════════════════════════════════════════════════
+
+🎲 SEED CRÉATIVITÉ: ${randomSeed} (utilise ce nombre pour varier tes choix)
+📋 FORMAT: ${formatConfig.name} (${formatConfig.duration})
+🎨 TON: ${tonConfig.name}
+🔄 LOOP: ${loopEnabled ? 'OUI - Utilise le format LOOP avec connecteur final' : 'NON'}
+
+INFORMATIONS DU BIEN:
+${propertyInfo}
+
+INFOS AJOUTÉES PAR L'AGENT:
+${userInfo}
+
+${loopEnabled ? LOOP_DEFINITION : ''}
+
+STRUCTURE DE FIN:
+${loopEnding}
+
+═══════════════════════════════════════════════════════════════════
+🎵 MUSIQUE - CHOISIS PARMI CETTE BANQUE
+═══════════════════════════════════════════════════════════════════
+
+CHOISIS UNE musique qui correspond VRAIMENT à l'ambiance du bien.
+Utilise le SEED ${randomSeed} pour varier ton choix (ne choisis pas toujours la même).
+
+BANQUE DE MUSIQUES (avec liens YouTube fonctionnels) :
+- "Nuvole Bianche" - Ludovico Einaudi → https://www.youtube.com/watch?v=xyY4IZ3JDFE (élégante, contemplative)
+- "Experience" - Ludovico Einaudi → https://www.youtube.com/watch?v=_VONMdDDPUQ (émouvante, cinéma)
+- "River Flows in You" - Yiruma → https://www.youtube.com/watch?v=7maJOI3QMu0 (douce, romantique)
+- "Time" - Hans Zimmer → https://www.youtube.com/watch?v=RxabLA7UQ9k (épique, immersive)
+- "Comptine d'un autre été" - Yann Tiersen → https://www.youtube.com/watch?v=NvryolGa19A (poétique)
+- "Sunset Lover" - Petit Biscuit → https://www.youtube.com/watch?v=wuCK-oiE3rM (moderne, aérienne)
+- "Intro" - The xx → https://www.youtube.com/watch?v=xMV6l2y67rk (minimaliste, élégante)
+- "Coastline" - Hollow Coves → https://www.youtube.com/watch?v=a3dMPc2w3sA (méditerranéenne)
+- "On The Nature Of Daylight" - Max Richter → https://www.youtube.com/watch?v=rVN1B-tUpgs (profonde)
+- "Arrival of the Birds" - The Cinematic Orchestra → https://www.youtube.com/watch?v=MqoANESQ4cQ (majestueuse)
+
+⚠️ CHOISIS celle qui correspond le mieux au bien ET varie ton choix à chaque génération !
+⚠️ UTILISE LE LIEN YOUTUBE EXACT de la musique choisie !
+`;
 
     try {
         let script = await callClaude(prompt, 4000);
@@ -261,24 +359,133 @@ EXEMPLE D'OUVERTURE : "${ton.exemple || ''}"`;
 }
 
 async function handlePostGeneration(session, message) {
-    const lower = (message || '').toLowerCase();
+    const lower = (message || '').toLowerCase().trim();
 
-    // Commandes de régénération standard
+    // ===============================================
+    // 0. NOUVEAUX MÉDIAS (IMAGES OU DOCUMENTS) → PRIORITÉ ABSOLUE
+    // ===============================================
+    const hasNewDocs = session.property.newDocumentUploaded;
+    const hasNewImages = session.property.newImageUploaded;
+
+    if (hasNewDocs || hasNewImages) {
+        // Reset flags
+        session.property.newDocumentUploaded = false;
+        session.property.newImageUploaded = false;
+
+        const docNames = session.property.documentsNames?.join(', ') || '';
+        const docContent = session.property.documentsText || '';
+        const imageUrls = session.property.imageUrls || [];
+        const userIntent = message?.trim() || '';
+
+        // Si nouvelles images, les analyser avec Vision
+        if (hasNewImages && imageUrls.length > 0) {
+            console.log('🔍 Analyse des nouvelles images post-génération...');
+
+            try {
+                // Analyser seulement les dernières images (max 3)
+                const newImageUrls = imageUrls.slice(-3);
+                const imageAnalysis = await visionService.analyzeProperty(newImageUrls, userIntent || 'Décris cette image');
+
+                // Construire une réponse basée sur l'analyse
+                const analysisContext = JSON.stringify(imageAnalysis, null, 2);
+
+                const prompt = `Tu es Bonaparte IA. L'utilisateur vient d'envoyer ${newImageUrls.length} nouvelle(s) photo(s) et demande: "${userIntent || 'regarde cette image'}"
+
+ANALYSE DES IMAGES:
+${analysisContext}
+
+SCRIPT ACTUEL:
+${session.generatedScript?.substring(0, 800) || '(pas de script)'}
+
+INSTRUCTIONS:
+1. Décris ce que tu vois sur la/les photo(s) - sois précis et descriptif
+2. Si l'utilisateur pose une question, réponds-y directement
+3. Propose comment intégrer ces visuels dans le script si pertinent
+4. Sois conversationnel et naturel (max 4-5 lignes)`;
+
+                let response = await callClaude(prompt, 400);
+                response = formatText(response);
+                return { message_utilisateur: response, config: { route: 'post_generation', script_generated: true } };
+
+            } catch (error) {
+                console.error('❌ Erreur analyse images:', error);
+                // Fallback si erreur
+                return {
+                    message_utilisateur: `J'ai bien reçu les nouvelles images mais je n'ai pas pu les analyser. Peux-tu me décrire ce que tu veux que je voie ?`,
+                    config: { route: 'post_generation', script_generated: true }
+                };
+            }
+        }
+
+        // Si seulement des documents
+        if (hasNewDocs && docContent) {
+            const prompt = `Tu es Bonaparte IA. L'utilisateur vient d'uploader un document après avoir généré un script.
+
+NOUVEAU DOCUMENT: ${docNames}
+CONTENU DU DOCUMENT:
+${docContent.substring(0, 3000)}
+
+MESSAGE DE L'UTILISATEUR: "${userIntent || '(aucun message)'}" 
+
+SCRIPT ACTUEL:
+${session.generatedScript?.substring(0, 1000) || '(pas de script)'}
+
+INSTRUCTIONS:
+1. Résume brièvement ce que contient le document (2-3 points clés)
+2. Explique comment ces infos peuvent améliorer le script
+3. Propose de régénérer le script en intégrant ces données
+4. Sois concis (max 5-6 lignes)`;
+
+            let response = await callClaude(prompt, 400);
+            response = formatText(response);
+            return { message_utilisateur: response, config: { route: 'post_generation', script_generated: true } };
+        }
+    }
+
+    // ===============================================
+    // 0.5 MESSAGE VIDE (sans nouveau média)
+    // ===============================================
+    if (!message || message.trim() === '') {
+        return {
+            message_utilisateur: '',
+            config: { route: 'post_generation', script_generated: true }
+        };
+    }
+
+    // ===============================================
+    // 1. DÉSACTIVER LE LOOP
+    // ===============================================
+    if (lower.includes('pas de loop') || lower.includes('sans loop') || lower.includes('met pas') ||
+        lower.includes('enlève le loop') || lower.includes('enleve le loop') || lower.includes('retire le loop')) {
+        session.config.loop = false;
+        session.config.type_video = 'signature'; // Passer en signature par défaut
+        console.log('🔄 Loop désactivé, passage en format SIGNATURE');
+        session.generatedScript = null;
+        return handleGeneration(session, message);
+    }
+
+    // ===============================================
+    // 2. COMMANDES EXPLICITES DE MODIFICATION
+    // ===============================================
     const commands = {
         'raccourcir': 'Raccourcis le script. Maximum 4 phrases courtes.',
+        'plus court': 'Raccourcis le script. Phrases plus courtes, moins de séquences.',
         'allonger': 'Allonge le script. Double le nombre de séquences.',
+        'plus long': 'Allonge le script. Plus de détails sur le bien.',
         'nouvelle version': 'Génère une version complètement différente.',
-        'original': 'Rends le script plus original et créatif.',
-        'premium': 'Rends le script plus luxueux et prestigieux.'
+        'nouveau script': 'Génère une version complètement différente.'
     };
 
     for (const [key, instruction] of Object.entries(commands)) {
         if (lower.includes(key)) return regenerate(session, instruction);
     }
 
-    // Détection de changement de FORMAT
+    // ===============================================
+    // 3. CHANGEMENT DE FORMAT EXPLICITE
+    // ===============================================
     const formatMatch = lower.match(/format\s+(teaser|reel|signature|loop)/i);
-    if (formatMatch || lower.includes('en format')) {
+    if (formatMatch || lower.includes('en format') || lower.includes('en teaser') ||
+        lower.includes('en reel') || lower.includes('en signature') || lower.includes('en loop')) {
         const format = formatMatch ? formatMatch[1].toLowerCase() :
             lower.includes('teaser') ? 'teaser' :
                 lower.includes('reel') ? 'reel' :
@@ -287,57 +494,181 @@ async function handlePostGeneration(session, message) {
 
         if (format) {
             session.config.type_video = format;
+            session.config.loop = (format === 'loop');
             console.log(`🎬 Changement de format vers: ${format}`);
-            // Supprimer le script pour forcer la régénération
             session.generatedScript = null;
             return handleGeneration(session, message);
         }
     }
 
-    // Détection de changement de TON
-    const tonMatch = lower.match(/ton\s+(prestige|dynamique|original)/i);
-    if (tonMatch || lower.includes('avec le ton')) {
-        const ton = tonMatch ? tonMatch[1].toLowerCase() :
-            lower.includes('prestige') ? 'prestige' :
-                lower.includes('dynamique') ? 'dynamique' :
-                    lower.includes('original') ? 'original' : null;
+    // ===============================================
+    // 4. CHANGEMENT DE TON EXPLICITE
+    // ===============================================
+    const tonPatterns = [
+        { pattern: /ton\s+(prestige|dynamique|original)/i, group: 1 },
+        { pattern: /(prestige|dynamique|original)\s*$/i, group: 1 },
+        { pattern: /en\s+(prestige|dynamique|original)/i, group: 1 },
+        { pattern: /avec\s+le\s+ton\s+(prestige|dynamique|original)/i, group: 1 }
+    ];
 
-        if (ton) {
-            session.config.ton = ton;
-            console.log(`🎨 Changement de ton vers: ${ton}`);
+    for (const { pattern, group } of tonPatterns) {
+        const match = lower.match(pattern);
+        if (match) {
+            const newTon = match[group].toLowerCase();
+            session.config.ton = newTon;
+            console.log(`🎨 Changement de ton vers: ${newTon}`);
             session.generatedScript = null;
             return handleGeneration(session, message);
         }
     }
 
-    // Commandes de régénération explicites
-    if (lower.includes('régénère') || lower.includes('regenere') || lower.includes('régénérer') || lower.includes('regenerer')) {
-        // Supprimer le script pour forcer la régénération
-        session.generatedScript = null;
+    // ===============================================
+    // 5. QUESTION SUR LE STYLE/FORMAT/TON UTILISÉ
+    // ===============================================
+    if (lower.includes('style') || lower.includes('c\'etait quoi') || lower.includes('c\'est quoi') ||
+        lower.includes('quel format') || lower.includes('quel ton') || lower.includes('quoi le')) {
+        const formatConfig = VIDEO_TYPES.find(t => t.id === session.config.type_video) || VIDEO_TYPES[3];
+        const tonConfig = TONS.find(t => t.id === session.config.ton) || TONS[0];
+        const loopEnabled = session.config.loop === true || session.config.type_video === 'loop';
 
-        // Extraire les retours de l'utilisateur s'il y en a
-        const feedback = message.replace(/régénère le script/gi, '').replace(/regenere le script/gi, '').trim();
-        if (feedback && feedback.length > 3) {
-            return regenerate(session, `Régénère le script avec ces retours: ${feedback}`);
-        }
-        return handleGeneration(session, message);
+        return {
+            message_utilisateur: `Le script actuel utilise :\n\n📹 **Format** : ${formatConfig.name} (${formatConfig.duration})\n🎨 **Ton** : ${tonConfig.name}\n🔄 **Loop** : ${loopEnabled ? 'OUI' : 'NON'}\n\nVous voulez changer quelque chose ?`,
+            config: { route: 'post_generation', script_generated: true }
+        };
     }
 
-    // Si le message contient "avec" c'est probablement des retours
-    if (lower.includes('avec ces retours') || lower.includes('et ce style')) {
-        return regenerate(session, message);
+    // ===============================================
+    // 6. FEEDBACK SUR LE HOOK → PROPOSER ALTERNATIVES
+    // ===============================================
+    if (lower.includes('hook') || lower.includes('ouverture') || lower.includes('début') || lower.includes('accroche')) {
+        const prompt = `L'utilisateur veut modifier le hook d'ouverture du script.
+
+Script actuel:
+${session.generatedScript}
+
+Message utilisateur: "${message}"
+
+INSTRUCTIONS:
+1. Propose 3 NOUVEAUX hooks d'ouverture différents (court, moyen, long)
+2. Demande lequel il préfère
+3. Sois bref et conversationnel
+
+Format de réponse:
+Je peux vous proposer ces alternatives :
+
+- **Hook A** : "[court - 3-5 mots]"
+- **Hook B** : "[moyen - 6-10 mots]"
+- **Hook C** : "[long - phrase complète]"
+
+Lequel vous préférez ?`;
+
+        let response = await callClaude(prompt, 400);
+        response = formatText(response);
+        return { message_utilisateur: response, config: { route: 'post_generation', script_generated: true } };
     }
 
-    // Tout autre message = retours libres
-    if (message && message.length > 5) {
-        return regenerate(session, `Prends en compte ces retours: ${message}`);
+    // ===============================================
+    // 7. FEEDBACK COURT → UTILISER CLAUDE POUR COMPRENDRE
+    // ===============================================
+    // Au lieu d'un menu générique, on laisse Claude interpréter directement
+    if (message.length < 60) {
+        const formatConfig = VIDEO_TYPES.find(t => t.id === session.config.type_video) || VIDEO_TYPES[3];
+        const tonConfig = TONS.find(t => t.id === session.config.ton) || TONS[0];
+
+        const prompt = `Tu es Bonaparte IA. L'utilisateur a généré un script et donne maintenant un feedback court.
+
+Script actuel (format ${formatConfig.name}, ton ${tonConfig.name}):
+${session.generatedScript?.substring(0, 1500)}
+
+Feedback utilisateur: "${message}"
+
+INSTRUCTIONS STRICTES:
+- Comprends le feedback même s'il est vague ("pas top", "bof", "trop long", "en rajoute trop", etc.)
+- Si l'utilisateur dit "trop" de quelque chose → propose de réduire/simplifier
+- Si l'utilisateur dit "pas assez" → propose d'enrichir
+- Si c'est négatif sans précision → propose 2-3 axes d'amélioration concrets
+- NE JAMAIS afficher un menu générique avec des tirets
+- Réponds de façon conversationnelle, comme un humain
+- Maximum 3-4 phrases
+- Termine en proposant une action concrète`;
+
+        let response = await callClaude(prompt, 350);
+        response = formatText(response);
+        return { message_utilisateur: response, config: { route: 'post_generation', script_generated: true } };
     }
 
-    return { message_utilisateur: `Script prêt ! Utilisez les boutons pour modifier ou donnez-moi vos retours.`, config: { route: 'post_generation', script_generated: true } };
+    // ===============================================
+    // 8. QUESTION SUR LA MUSIQUE
+    // ===============================================
+    if (lower.includes('musique') || lower.includes('pourquoi cette')) {
+        const prompt = `L'utilisateur pose une question sur le script ou la musique.
+
+Script actuel: ${session.generatedScript}
+
+Question: "${message}"
+
+Réponds en 2-3 phrases maximum. Explique ton choix de musique ou propose des alternatives si demandé.
+Sois conversationnel et propose d'autres options si l'utilisateur n'est pas convaincu.
+Exemples de musiques alternatives à proposer selon le style du bien.`;
+
+        let response = await callClaude(prompt, 300);
+        response = formatText(response);
+        return { message_utilisateur: response, config: { route: 'post_generation', script_generated: true } };
+    }
+
+    // ===============================================
+    // 9. QUESTION GÉNÉRALE → CONVERSATION
+    // ===============================================
+    if (lower.includes('?') || lower.includes('pourquoi') || lower.includes('tu penses') || lower.includes('tu en penses')) {
+        const prompt = `L'utilisateur pose une question ou demande ton avis sur le script.
+
+Script actuel: ${session.generatedScript}
+
+Message: "${message}"
+
+Réponds en 2-3 phrases. Sois conversationnel, donne ton avis, propose des idées.
+Si l'utilisateur a une suggestion, dis ce que tu en penses et propose de l'intégrer.`;
+
+        let response = await callClaude(prompt, 300);
+        response = formatText(response);
+        return { message_utilisateur: response, config: { route: 'post_generation', script_generated: true } };
+    }
+
+    // ===============================================
+    // 10. FEEDBACK DÉTAILLÉ → INTÉGRER ET RÉGÉNÉRER
+    // ===============================================
+    if (message && message.length > 30) {
+        return regenerate(session, `L'utilisateur a donné ce feedback: ${message}`);
+    }
+
+    // ===============================================
+    // 11. MESSAGE COURT → UTILISER CLAUDE POUR COMPRENDRE
+    // ===============================================
+    const formatConfig = VIDEO_TYPES.find(t => t.id === session.config.type_video) || VIDEO_TYPES[3];
+    const tonConfig = TONS.find(t => t.id === session.config.ton) || TONS[0];
+
+    const prompt = `Tu es Bonaparte IA. L'utilisateur a généré un script et envoie maintenant ce message court.
+
+Script actuel (format ${formatConfig.name}, ton ${tonConfig.name}):
+${session.generatedScript}
+
+Message utilisateur: "${message}"
+
+INSTRUCTIONS:
+- Comprends ce que l'utilisateur veut (même si c'est vague)
+- Si c'est une demande de modification → propose de le faire
+- Si c'est une question → réponds directement
+- Si c'est incompréhensible → demande une clarification COURTE
+- Maximum 2-3 phrases
+- Sois direct et utile, pas de menu générique`;
+
+    let response = await callClaude(prompt, 300);
+    response = formatText(response);
+    return { message_utilisateur: response, config: { route: 'post_generation', script_generated: true } };
 }
 
 function extractCity(description) {
-    const cities = ['Saint-Gély-du-Fesc', 'Montpellier', 'Mougins', 'Cannes', 'Nice', 'Monaco', 'Paris', 'Lyon'];
+    const cities = ['Saint-Gély-du-Fesc', 'Montpellier', 'Mougins', 'Cannes', 'Nice', 'Monaco', 'Paris', 'Lyon', 'Sainte-Maxime'];
     for (const city of cities) {
         if (description.toLowerCase().includes(city.toLowerCase())) return city;
     }
@@ -356,7 +687,42 @@ function formatText(text) {
 }
 
 async function regenerate(session, instruction) {
-    const prompt = `Script actuel:\n${session.generatedScript}\n\nModification: ${instruction}`;
+    const propertyContext = session.property?.analysis?.fullSummary ||
+        session.property?.description ||
+        'Bien immobilier de prestige';
+
+    const format = VIDEO_TYPES.find(f => f.id === session.config?.type_video) || VIDEO_TYPES[2];
+    const ton = TONS.find(t => t.id === session.config?.ton) || TONS[0];
+    const loopEnabled = session.config?.loop || false;
+
+    const prompt = `Tu es Bonaparte IA, expert en scripts vidéo immobilier pour Instagram.
+
+CONTEXTE DU BIEN :
+${propertyContext}
+
+FORMAT: ${format.name} (${format.duration}) | TON: ${ton.name} | LOOP: ${loopEnabled ? 'OUI' : 'NON'}
+
+SCRIPT ACTUEL :
+${session.generatedScript}
+
+MODIFICATION DEMANDÉE :
+${instruction}
+
+═══════════════════════════════════════════════════════════════════
+⚠️ FORMAT OBLIGATOIRE - NE PAS CHANGER LA STRUCTURE
+═══════════════════════════════════════════════════════════════════
+
+Tu DOIS utiliser EXACTEMENT cette structure pour CHAQUE séquence :
+
+[SÉQUENCE X]
+Texte : "[la phrase]"
+Visuel : [indication de plan]
+
+**MUSIQUE SUGGÉRÉE :**
+🎵 "[Titre exact]" - [Artiste]
+
+Génère le script modifié :`;
+
     let script = await callClaude(prompt, 4000);
     script = formatText(script);
     session.generatedScript = script;

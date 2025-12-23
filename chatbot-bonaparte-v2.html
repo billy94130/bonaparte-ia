@@ -1642,19 +1642,111 @@
         async function handleSend() {
             const message = elements.messageInput.value.trim();
             const hasImages = state.images.length > 0;
+            const hasDocs = state.documents.length > 0;
 
-            if ((!message && !hasImages) || state.isLoading || !CONFIG.sessionId) return;
+            if ((!message && !hasImages && !hasDocs) || state.isLoading || !CONFIG.sessionId) return;
 
             elements.messageInput.value = '';
             elements.messageInput.style.height = 'auto';
             elements.sendButton.disabled = true;
 
-            // Si on a des images, les uploader d'abord
-            if (hasImages && !state.imagesUploaded) {
+            // Premier upload : images et documents initiaux
+            if ((hasImages || hasDocs) && !state.imagesUploaded) {
                 await uploadAndAnalyzeImages(message);
-            } else {
+            }
+            // Upload de nouveaux médias (images OU documents) APRÈS la première analyse
+            else if ((hasImages || hasDocs) && state.imagesUploaded) {
+                await uploadNewMedia(message);
+            }
+            else {
                 // Sinon, envoyer le message au chat
                 await sendChatMessage(message);
+            }
+        }
+
+        // Fonction pour uploader de nouveaux médias (images ET/OU documents) après la génération initiale
+        async function uploadNewMedia(message) {
+            showTypingIndicator();
+            state.isLoading = true;
+
+            try {
+                const hasImages = state.images.length > 0;
+                const hasDocs = state.documents.length > 0;
+
+                // Afficher le message utilisateur avec les médias
+                const imagesPreviews = state.images.map(img => img.preview);
+                const docsList = state.documents.map(doc => ({ name: doc.name }));
+                const defaultMsg = hasImages && hasDocs ? 'Nouvelles photos et documents ajoutés' :
+                    hasImages ? 'Nouvelles photos ajoutées' : 'Nouveaux documents ajoutés';
+                addMessage(message || defaultMsg, 'user', imagesPreviews, docsList);
+
+                // 1. Upload des nouvelles images si présentes
+                if (hasImages) {
+                    updateStatus('loading', 'Upload images...');
+
+                    const imageFormData = new FormData();
+                    imageFormData.append('session_id', CONFIG.sessionId);
+                    for (const img of state.images) {
+                        imageFormData.append('images', img.file);
+                    }
+
+                    const imgResponse = await fetch(`${CONFIG.apiUrl}/bien/upload`, {
+                        method: 'POST',
+                        body: imageFormData
+                    });
+
+                    const imgData = await imgResponse.json();
+                    if (imgData.success) {
+                        console.log('✅ Nouvelles images uploadées:', imgData.images_count);
+                    } else {
+                        console.warn('⚠️ Erreur upload images:', imgData.error);
+                    }
+                }
+
+                // 2. Upload des nouveaux documents si présents
+                if (hasDocs) {
+                    updateStatus('loading', 'Analyse documents...');
+
+                    const docFormData = new FormData();
+                    docFormData.append('session_id', CONFIG.sessionId);
+                    for (const doc of state.documents) {
+                        docFormData.append('documents', doc.file);
+                    }
+
+                    const docResponse = await fetch(`${CONFIG.apiUrl}/bien/documents`, {
+                        method: 'POST',
+                        body: docFormData
+                    });
+
+                    const docData = await docResponse.json();
+                    if (docData.success) {
+                        console.log('✅ Nouveaux documents parsés:', docData.documents_count, 'fichiers');
+                    } else {
+                        console.warn('⚠️ Erreur parsing documents:', docData.error);
+                    }
+                }
+
+                // Vider les médias locaux après upload
+                state.images = [];
+                state.documents = [];
+                updateImagePreview();
+                elements.uploadButton.classList.remove('has-images');
+                elements.docUploadButton.classList.remove('has-images');
+
+                updateStatus('connected', 'Agent Actif');
+                hideTypingIndicator();
+
+                // Envoyer un message vide pour déclencher la reconnaissance des nouveaux médias
+                // (le message a déjà été affiché par addMessage ci-dessus)
+                await sendChatMessage('');
+
+            } catch (error) {
+                console.error('❌ Erreur upload médias:', error);
+                hideTypingIndicator();
+                updateStatus('error', 'Erreur');
+                addErrorMessage(error.message);
+            } finally {
+                state.isLoading = false;
             }
         }
 
@@ -1663,46 +1755,77 @@
             state.isLoading = true;
 
             try {
-                // Afficher le message utilisateur
+                // Afficher le message utilisateur - montrer uniquement le texte s'il y en a
                 const imagesPreviews = state.images.map(img => img.preview);
-                addMessage(description || 'Photos envoyées', 'user', imagesPreviews);
+                const docsList = state.documents.map(doc => ({ name: doc.name }));
+                // Si description fournie, l'afficher. Sinon, message vide (les images parlent d'elles-mêmes)
+                const userMessage = description ? description.trim() : '';
+                addMessage(userMessage, 'user', imagesPreviews, docsList);
 
-                // 1. Upload des images
-                updateStatus('loading', 'Upload...');
+                // 1. Upload des documents au serveur pour parsing (PDF, TXT, DOC)
+                if (state.documents.length > 0) {
+                    updateStatus('loading', 'Parsing documents...');
 
-                const formData = new FormData();
-                formData.append('session_id', CONFIG.sessionId);
-                for (const img of state.images) {
-                    formData.append('images', img.file);
+                    const docFormData = new FormData();
+                    docFormData.append('session_id', CONFIG.sessionId);
+                    for (const doc of state.documents) {
+                        docFormData.append('documents', doc.file);
+                    }
+
+                    const docResponse = await fetch(`${CONFIG.apiUrl}/bien/documents`, {
+                        method: 'POST',
+                        body: docFormData
+                    });
+
+                    const docData = await docResponse.json();
+                    if (docData.success) {
+                        console.log('✅ Documents parsés:', docData.documents_count, 'fichiers,', docData.text_length, 'caractères');
+                    } else {
+                        console.warn('⚠️ Erreur parsing documents:', docData.error);
+                    }
                 }
 
-                const uploadResponse = await fetch(`${CONFIG.apiUrl}/bien/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
+                // 2. Upload des images (si présentes)
+                if (state.images.length > 0) {
+                    updateStatus('loading', 'Upload images...');
 
-                const uploadData = await uploadResponse.json();
+                    const formData = new FormData();
+                    formData.append('session_id', CONFIG.sessionId);
+                    for (const img of state.images) {
+                        formData.append('images', img.file);
+                    }
 
-                if (!uploadData.success) {
-                    throw new Error(uploadData.error || 'Erreur upload');
+                    const uploadResponse = await fetch(`${CONFIG.apiUrl}/bien/upload`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const uploadData = await uploadResponse.json();
+
+                    if (!uploadData.success) {
+                        throw new Error(uploadData.error || 'Erreur upload');
+                    }
+
+                    console.log('✅ Images uploadées:', uploadData.images_count);
                 }
 
-                console.log('✅ Images uploadées:', uploadData.images_count);
                 state.imagesUploaded = true;
 
-                // Clear images
+                // Clear images and documents
                 state.images = [];
+                state.documents = [];
                 updateImagePreview();
+                elements.docUploadButton.classList.remove('has-images');
 
-                // 2. Analyser les images
-                updateStatus('loading', 'Analyse Vision...');
+                // 3. Analyser les images + documents (le serveur combine description + documents parsés)
+                updateStatus('loading', 'Analyse IA...');
 
                 const analyzeResponse = await fetch(`${CONFIG.apiUrl}/bien/analyze`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         session_id: CONFIG.sessionId,
-                        description: description
+                        description: description || ''
                     })
                 });
 
@@ -1728,6 +1851,16 @@
             } finally {
                 state.isLoading = false;
             }
+        }
+
+        // Helper function to read file as text
+        function readFileAsText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(e);
+                reader.readAsText(file);
+            });
         }
 
         async function sendChatMessage(message) {
@@ -1757,8 +1890,10 @@
                     throw new Error(data.error);
                 }
 
-                // Afficher la réponse
-                addMessage(data.message, 'bot');
+                // Afficher la réponse SEULEMENT si le message n'est pas vide
+                if (data.message && data.message.trim()) {
+                    addMessage(data.message, 'bot');
+                }
 
                 // Détecter si on doit afficher le panneau de config
                 if (data.config && data.config.route === 'configuration') {
@@ -1784,7 +1919,7 @@
         // =====================================================
         // UI HELPERS
         // =====================================================
-        function addMessage(text, type, images = null) {
+        function addMessage(text, type, images = null, documents = null) {
             const timestamp = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
             const message = document.createElement('div');
             message.className = `message ${type}-message`;
@@ -1793,6 +1928,16 @@
             if (images && images.length > 0) {
                 imagesHtml = `<div class="message-images">${images.map(src =>
                     `<img src="${src}" alt="Photo">`
+                ).join('')}</div>`;
+            }
+
+            let documentsHtml = '';
+            if (documents && documents.length > 0) {
+                documentsHtml = `<div class="message-documents" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">${documents.map(doc =>
+                    `<div style="display: flex; align-items: center; gap: 4px; background: rgba(139, 115, 85, 0.1); padding: 4px 10px; border-radius: 6px; font-size: 12px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        <span>${escapeHtml(doc.name)}</span>
+                    </div>`
                 ).join('')}</div>`;
             }
 
@@ -1810,6 +1955,16 @@
                     </div>
                 `;
             } else {
+                // Déterminer le texte à afficher
+                const hasMedia = (images && images.length > 0) || (documents && documents.length > 0);
+                let displayText = '';
+                if (text && text.trim()) {
+                    displayText = `<p>${escapeHtml(text)}</p>`;
+                } else if (!hasMedia) {
+                    displayText = '<p><em>Message envoyé</em></p>';
+                }
+                // Si pas de texte mais médias présents, on n'affiche pas de texte fallback
+
                 message.innerHTML = `
                     <div class="message-avatar">
                         <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -1819,8 +1974,9 @@
                             <span class="message-sender">Vous</span>
                             <span class="message-time">${timestamp}</span>
                         </div>
-                        <div class="message-text">${text ? `<p>${escapeHtml(text)}</p>` : '<p><em>Photos envoyées</em></p>'}</div>
+                        <div class="message-text">${displayText}</div>
                         ${imagesHtml}
+                        ${documentsHtml}
                     </div>
                 `;
             }

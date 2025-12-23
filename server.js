@@ -14,6 +14,7 @@ const path = require('path');
 const cloudinaryService = require('./services/cloudinary');
 const visionService = require('./services/vision');
 const agentService = require('./services/agent');
+const documentParser = require('./services/document-parser');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -116,19 +117,80 @@ app.post('/api/bien/upload', upload.array('images', 15), async (req, res) => {
         console.log(`📷 Upload de ${req.files.length} images`);
 
         const uploadResults = await cloudinaryService.uploadMultiple(req.files);
-        session.property.imageUrls = uploadResults.map(r => r.url);
+        const newUrls = uploadResults.map(r => r.url);
 
-        console.log(`✅ ${uploadResults.length} images uploadées`);
+        // Ajouter les nouvelles images aux existantes (au lieu de remplacer)
+        const existingUrls = session.property.imageUrls || [];
+        session.property.imageUrls = [...existingUrls, ...newUrls];
+
+        // Flag pour signaler de nouvelles images si script déjà généré
+        if (session.generatedScript) {
+            session.property.newImageUploaded = true;
+            console.log('📌 Flag newImageUploaded activé (post-génération)');
+        }
+
+        console.log(`✅ ${uploadResults.length} images uploadées (total: ${session.property.imageUrls.length})`);
 
         res.json({
             success: true,
             session_id,
             images_count: uploadResults.length,
+            total_images: session.property.imageUrls.length,
             urls: session.property.imageUrls
         });
 
     } catch (error) {
         console.error('❌ Erreur upload:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/bien/documents - Upload et parse des documents (PDF, TXT, DOC)
+ */
+app.post('/api/bien/documents', upload.array('documents', 10), async (req, res) => {
+    try {
+        const { session_id } = req.body;
+
+        if (!session_id) {
+            return res.status(400).json({ error: 'session_id requis' });
+        }
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'Aucun document fourni' });
+        }
+
+        const session = getOrCreateSession(session_id);
+
+        console.log(`📄 Upload de ${req.files.length} documents`);
+
+        // Parse all documents and extract text
+        const documentsText = await documentParser.parseDocuments(req.files);
+
+        // Store in session
+        session.property.documentsText = documentsText;
+        session.property.documentsCount = req.files.length;
+        session.property.documentsNames = req.files.map(f => f.originalname);
+
+        // Flag pour signaler à l'agent SEULEMENT si script déjà généré
+        // (sinon c'est l'upload initial qui fait partie du flow normal)
+        if (session.generatedScript) {
+            session.property.newDocumentUploaded = true;
+            console.log('📌 Flag newDocumentUploaded activé (post-génération)');
+        }
+
+        console.log(`✅ ${req.files.length} documents parsés (${documentsText.length} caractères extraits)`);
+
+        res.json({
+            success: true,
+            session_id,
+            documents_count: req.files.length,
+            documents_names: session.property.documentsNames,
+            text_length: documentsText.length
+        });
+
+    } catch (error) {
+        console.error('❌ Erreur documents:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -146,29 +208,51 @@ app.post('/api/bien/analyze', async (req, res) => {
 
         const session = getOrCreateSession(session_id);
 
-        if (session.property.imageUrls.length === 0) {
-            return res.status(400).json({ error: 'Aucune image uploadée' });
+        // Combine user description + parsed documents text
+        const documentsText = session.property.documentsText || '';
+        const fullDescription = (description || '') + documentsText;
+
+        session.property.description = fullDescription;
+        console.log(`📝 Description totale: ${fullDescription.length} caractères`);
+
+        // If we have images, do vision analysis
+        if (session.property.imageUrls.length > 0) {
+            console.log(`🔍 Analyse Vision de ${session.property.imageUrls.length} images...`);
+
+            const analysis = await visionService.analyzeProperty(
+                session.property.imageUrls,
+                fullDescription
+            );
+
+            session.property.analysis = analysis;
+            console.log(`✅ Analyse terminée`);
+
+            res.json({
+                success: true,
+                session_id,
+                analysis,
+                message: "Bien analysé avec succès"
+            });
+        } else {
+            // No images - just documents/text
+            console.log(`📄 Analyse texte uniquement (pas d'images)`);
+
+            // Create a basic analysis from description
+            session.property.analysis = {
+                pieces_identifiees: [],
+                materiaux: [],
+                standing: 'luxe',
+                points_forts: [],
+                ambiance: 'non analysée (pas de photos)'
+            };
+
+            res.json({
+                success: true,
+                session_id,
+                analysis: session.property.analysis,
+                message: "Description enregistrée (pas de photos à analyser)"
+            });
         }
-
-        session.property.description = description || '';
-
-        console.log(`🔍 Analyse Vision de ${session.property.imageUrls.length} images...`);
-
-        const analysis = await visionService.analyzeProperty(
-            session.property.imageUrls,
-            description
-        );
-
-        session.property.analysis = analysis;
-
-        console.log(`✅ Analyse terminée`);
-
-        res.json({
-            success: true,
-            session_id,
-            analysis,
-            message: "Bien analysé avec succès"
-        });
 
     } catch (error) {
         console.error('❌ Erreur analyse:', error);
