@@ -1152,57 +1152,80 @@
             }
 
             .input-area {
-                padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0));
+                padding: var(--space-sm);
+                padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom, 0));
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(20px);
             }
 
-            /* Header compact */
+            /* Header compact & modern */
             .header {
                 padding: var(--space-sm) var(--space-md);
+                background: rgba(255, 255, 255, 0.9);
             }
 
             .logo-icon {
-                width: 32px;
-                height: 32px;
+                width: 36px;
+                height: 36px;
             }
 
             .logo-title {
-                font-size: 1.2rem;
-                letter-spacing: 0.08em;
+                font-size: 1.3rem;
+                letter-spacing: 0.1em;
             }
 
             .logo-subtitle {
-                font-size: 0.6rem;
+                font-size: 0.65rem;
+                opacity: 0.8;
             }
 
             .status-text {
                 font-size: 0.7rem;
             }
 
-            /* Input area touch-friendly */
-            .upload-button,
-            .doc-upload-button,
-            .send-button {
-                width: 48px !important;
-                height: 48px !important;
-                min-width: 48px;
-                min-height: 48px;
+            /* Input bar - Modern & Polished */
+            .input-wrapper {
+                padding: 10px 12px;
+                gap: 8px;
+                border-radius: 24px;
+                border: 1px solid rgba(184, 168, 138, 0.3);
+                box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
             }
 
-            .upload-button svg,
-            .doc-upload-button svg,
-            .send-button svg {
-                width: 22px;
-                height: 22px;
+            .input-wrapper:focus-within {
+                border-color: var(--bp-desert);
+                box-shadow: 0 4px 20px rgba(184, 168, 138, 0.15);
             }
 
             .input-wrapper textarea {
                 font-size: 16px;
-                /* Prevents iOS zoom on focus */
+                padding: 4px 0;
             }
 
-            .input-wrapper {
-                padding: var(--space-sm);
-                gap: var(--space-xs);
+            /* Upload & Send buttons - Touch-friendly circles */
+            .upload-button,
+            .send-button {
+                width: 44px !important;
+                height: 44px !important;
+                min-width: 44px;
+                min-height: 44px;
+                border-radius: 50%;
+            }
+
+            .upload-button {
+                background: rgba(184, 168, 138, 0.1);
+                border: none;
+            }
+
+            .upload-button svg,
+            .send-button svg {
+                width: 20px;
+                height: 20px;
+            }
+
+            .send-button {
+                background: linear-gradient(135deg, var(--bp-desert) 0%, var(--bp-gold) 100%);
+                box-shadow: 0 4px 12px rgba(184, 168, 138, 0.3);
             }
 
             /* Hide keyboard hints on mobile */
@@ -1210,55 +1233,107 @@
                 display: none;
             }
 
+            /* Welcome steps - Enhanced design */
+            .welcome-steps {
+                gap: 10px;
+                margin-top: var(--space-lg);
+            }
+
+            .welcome-step {
+                padding: 12px 14px;
+                background: linear-gradient(135deg, rgba(184, 168, 138, 0.08) 0%, rgba(196, 169, 98, 0.05) 100%);
+                border-radius: 12px;
+                border: 1px solid rgba(184, 168, 138, 0.15);
+            }
+
+            .step-number {
+                width: 28px;
+                height: 28px;
+                background: linear-gradient(135deg, var(--bp-desert) 0%, var(--bp-gold) 100%);
+                color: white;
+                font-size: 0.8rem;
+                font-weight: 700;
+                border-radius: 50%;
+                box-shadow: 0 2px 8px rgba(184, 168, 138, 0.3);
+                flex-shrink: 0;
+            }
+
+            .step-text {
+                font-size: 0.85rem;
+                color: var(--text-primary);
+                line-height: 1.4;
+            }
+
+            /* Welcome title */
+            .welcome-title {
+                font-size: 1.25rem;
+                margin-bottom: var(--space-sm) !important;
+            }
+
+            /* Welcome hint - Better styling */
+            .welcome-hint {
+                margin-top: var(--space-md) !important;
+                padding: 12px 14px;
+                background: linear-gradient(135deg, rgba(184, 168, 138, 0.12) 0%, rgba(184, 168, 138, 0.06) 100%);
+                border-left: 3px solid var(--bp-desert);
+                border-radius: 0 10px 10px 0;
+                font-size: 0.8rem;
+            }
+
             /* Config buttons larger for touch */
             .config-btn {
-                min-width: 75px;
-                min-height: 44px;
-                padding: var(--space-sm);
-                font-size: 0.75rem;
+                min-width: 80px;
+                min-height: 46px;
+                padding: var(--space-sm) var(--space-md);
+                font-size: 0.8rem;
+                border-radius: 10px;
             }
 
             .config-panel-content {
-                padding: var(--space-sm);
+                padding: var(--space-md);
             }
 
             /* Image preview - always show remove button on mobile */
             .image-preview-item .remove-image {
                 opacity: 1 !important;
-                width: 26px;
-                height: 26px;
-                font-size: 14px;
+                width: 28px;
+                height: 28px;
+                font-size: 16px;
+                background: rgba(0, 0, 0, 0.7);
             }
 
             .image-preview-grid {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 6px;
+                gap: 8px;
             }
 
-            /* Messages */
+            /* Messages - Refined */
             .message-content {
-                padding: var(--space-sm) var(--space-md);
+                padding: 14px 16px;
+                border-radius: 16px;
             }
 
             .message-text {
-                font-size: 0.9rem;
-                line-height: 1.6;
+                font-size: 0.92rem;
+                line-height: 1.65;
             }
 
             .message-avatar {
-                width: 32px;
-                height: 32px;
+                width: 36px;
+                height: 36px;
             }
 
             /* Export buttons touch-friendly */
             .export-btn {
-                min-height: 44px;
-                font-size: 0.8rem;
-                padding: var(--space-sm) var(--space-md);
+                min-height: 48px;
+                font-size: 0.85rem;
+                padding: var(--space-md);
+                border-radius: 12px;
             }
 
             .export-panel {
                 flex-direction: column;
+                gap: 10px;
             }
 
             .export-btn {
@@ -1267,32 +1342,21 @@
 
             /* Generate button */
             .generate-btn {
-                min-height: 50px;
+                min-height: 52px;
                 font-size: 1rem;
-            }
-
-            /* Welcome message compact */
-            .welcome-title {
-                font-size: 1.15rem;
-            }
-
-            .welcome-step {
-                padding: var(--space-xs) var(--space-sm);
-            }
-
-            .step-text {
-                font-size: 0.8rem;
+                border-radius: 14px;
             }
 
             /* Feedback textarea */
             .feedback-input {
                 font-size: 16px;
-                /* Prevents iOS zoom */
+                border-radius: 12px;
+                padding: 14px;
             }
 
             /* Post-gen panel buttons */
             .config-buttons {
-                gap: 6px;
+                gap: 8px;
             }
         }
 
