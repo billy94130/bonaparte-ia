@@ -1,62 +1,52 @@
 # TON PRESTIGE - Bonaparte IA
 
-Le ton PRESTIGE = **élégant, sobre, magazine haut de gamme**.
-Phrases posées. Vocabulaire précis. Zéro superlatif.
+**L'essence** : Magazine haut de gamme. Élégance sobre. Chaque mot compte.
 
 ---
 
-## RÈGLE D'OR
+## CE QUI REND PRESTIGE UNIQUE
 
-**Le texte doit ressembler à un article de magazine immobilier premium.**
+Le ton Prestige ne décrit pas un bien, il le **révèle**.
+C'est le ton des biens d'exception qui n'ont pas besoin de superlatifs.
 
----
-
-## ❌ INTERDIT
-
-| ❌ Erreur | Pourquoi |
-|----------|----------|
-| "Propriété d'exception" | Superlatif vide |
-| "Le séjour. Vaste." | Pas une phrase |
-| "On entre. On découvre." | Mouvement, pas description |
-| Phrases d'un mot | Illisible |
+**Vocabulaire** : précis, technique, architectural
+**Rythme** : posé, phrases longues et construites
+**Émotion** : retenue, le luxe se ressent sans être nommé
 
 ---
 
-## ✅ OBLIGATOIRE
+## EXEMPLES PRESTIGE
 
-| ✅ Prestige | Pourquoi |
-|------------|----------|
-| "Le séjour de 50 m² s'organise autour d'une cheminée en pierre." | Précis, élégant |
-| "La suite parentale dispose de son dressing et de sa salle de bains." | Complet, fluide |
-| "Le jardin paysager s'étend sur [surface]." | Sobre, factuel |
+**Hook d'ouverture :**
 
----
+- "Sur les hauteurs de Mougins, une propriété de 280 m² attend son prochain chapitre."
+- "Le silence d'abord. Puis la vue."
+- "Certaines adresses ne se partagent pas. Celle-ci, exceptionnellement, oui."
 
-## Comment écrire
+**Séquences intérieures :**
 
-1. **Phrases complètes et posées**
-2. **Commencer par l'élément décrit** (pas par "On")
-3. **Chiffres précis** quand disponibles
-4. **Vocabulaire sobre** : pas de superlatifs, pas d'exagération
-5. **Lisible comme un magazine**
+- "Le séjour de 65 m² s'articule autour d'une double hauteur sous plafond."
+- "La cuisine a été conçue par [architecte/marque] en 2019."
+- "Chaque suite dispose de son dressing et de sa salle de bains privative."
 
----
+**Conclusion :**
 
-## Structure des phrases
-
-- "Le [élément] de [mesure] est [caractéristique]."
-- "La [pièce] s'ouvre sur [élément extérieur]."
-- "À l'étage, [description des espaces]."
-- "[Surface]. [Pièces]. [Localisation]. [Prix]."
+- "[Surface]. [Pièces]. [Localisation]. Sur demande."
 
 ---
 
-## Validation
+## CE QUI N'EST PAS PRESTIGE
 
-Un script PRESTIGE est bon si :
+❌ "Villa de rêve avec vue exceptionnelle !"
+❌ "3 chambres. 2 SDB. Piscine."  
+❌ "Vous allez adorer cette propriété !"
 
-- Il pourrait être publié dans un magazine immobilier
-- Aucune phrase hachée ou télégraphique
-- Le standing se ressent par la précision, pas par les superlatifs
+---
 
-**VOUVOIEMENT OBLIGATOIRE**
+## VALIDATION
+
+Un script PRESTIGE est réussi si :
+
+- On pourrait le lire dans AD Magazine
+- Aucun superlatif vide (exceptionnel, magnifique, sublime)
+- Le standing transparaît par les détails, pas par les mots

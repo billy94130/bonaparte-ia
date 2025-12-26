@@ -157,35 +157,7 @@ async function handlePhotoSummary(session) {
 
 async function handleConversation(session, message) {
     if (!message || !message.trim()) {
-        return { message_utilisateur: `Ajoute quelque chose ou dis "ok" pour continuer.`, config: { route: 'conversation' } };
-    }
-
-    const lower = message.toLowerCase().trim();
-
-    // Phrases EXACTES qui déclenchent le passage à la configuration
-    const exactReadyPhrases = [
-        'ok', 'non', 'no', 'nope', 'rien', 'prêt', 'go', 'oui',
-        'c\'est bon', 'c\'est tout', 'c\'est top', 'parfait', 'super',
-        'non merci', 'rien d\'autre', 'on passe', 'rien à ajouter',
-        'non c\'est bon', 'non c\'est tout', 'non rien',
-        'c\'est ok', 'tout est bon', 'on y va', 'générer', 'generer',
-        'on passe à la suite', 'on passe a la suite', 'passons à la suite',
-        'suite', 'continuer', 'on continue', 'next', 'suivant',
-        'j\'ai fini', 'j\'ai terminé', 'terminé', 'fini',
-        'non c\'est bon on passe à la suite', 'non c\'est bon on passe a la suite',
-        'on peut passer', 'on peut continuer', 'allons-y', 'let\'s go',
-        'ça me va', 'ca me va', 'nickel', 'top', 'impec', 'impeccable'
-    ];
-
-    // Vérifier si c'est une validation (contient une des phrases)
-    const isExactReady = exactReadyPhrases.some(p => lower === p || lower.includes(p));
-
-    // Si le message contient "oui" mais avec du contenu après → c'est une info à ajouter
-    const startsWithYesAndHasContent = (lower.startsWith('oui ') || lower.startsWith('oui,')) && lower.length > 5;
-
-    if (isExactReady && !startsWithYesAndHasContent) {
-        session.readyForConfig = true;
-        return handleConfiguration(session, '');
+        return { message_utilisateur: `Je vous écoute. Dites-moi ce que vous souhaitez.`, config: { route: 'conversation' } };
     }
 
     session.conversationHistory = session.conversationHistory || [];
@@ -193,34 +165,61 @@ async function handleConversation(session, message) {
     session.conversationCount = (session.conversationCount || 0) + 1;
 
     session.conversationHistory.push({ role: 'user', content: message.trim() });
-    session.additionalInfos.push(message.trim());
 
     try {
-        // Construire le contexte du bien pour éviter les hallucinations
+        // Contexte du bien
         const propertyContext = `
 Bien: ${session.property.description || 'Propriété de prestige'}
 Analyse: ${session.photoSummary ? 'Photos analysées' : 'En cours'}
-Infos ajoutées: ${session.additionalInfos.slice(0, -1).join(', ') || 'Aucune'}
+Infos ajoutées: ${session.additionalInfos.join(', ') || 'Aucune'}
 `;
 
         const historyText = session.conversationHistory.map(m => `${m.role === 'user' ? 'User' : 'IA'}: ${m.content}`).join('\n');
-        const conversationPrompt = CONVERSATION_PROMPT
-            .replace('{PROPERTY_CONTEXT}', propertyContext)
-            .replace('{CONVERSATION_HISTORY}', historyText || '-')
-            .replace('{USER_MESSAGE}', message.trim());
+
+        // Prompt intelligent qui laisse l'IA décider
+        const conversationPrompt = `Tu es Bonaparte IA, expert en scripts vidéo Instagram pour l'immobilier.
+
+CONTEXTE DU BIEN :
+${propertyContext}
+
+HISTORIQUE :
+${historyText}
+
+MESSAGE DE L'UTILISATEUR : "${message.trim()}"
+
+---
+
+Tu dois répondre naturellement à l'utilisateur.
+
+ANALYSE SON INTENTION :
+- S'il ajoute une info sur le bien → note-la et demande s'il y a autre chose
+- S'il veut passer à la génération/configuration/choisir format/ton → réponds "SHOW_CONFIG" (exactement ce mot seul)
+- S'il pose une question → réponds naturellement
+- S'il n'a plus rien à ajouter → propose de passer à la configuration
+
+Sois bref (2-3 phrases max), naturel, et vouvoie toujours.
+Utilise uniquement les informations fournies.`;
 
         let aiResponse = await callClaude(conversationPrompt, 300);
         aiResponse = formatText(aiResponse);
-        session.conversationHistory.push({ role: 'assistant', content: aiResponse });
 
-        if (session.conversationCount >= 3) {
-            aiResponse += '\n\nOn passe à la config ? Dis "ok" !';
+        // Si l'IA détecte que l'utilisateur veut passer à la config
+        if (aiResponse.includes('SHOW_CONFIG') || aiResponse.trim() === 'SHOW_CONFIG') {
+            session.readyForConfig = true;
+            return handleConfiguration(session, '');
         }
+
+        // Sinon, ajouter aux infos si c'est pertinent (pas juste une question)
+        if (!message.trim().endsWith('?')) {
+            session.additionalInfos.push(message.trim());
+        }
+
+        session.conversationHistory.push({ role: 'assistant', content: aiResponse });
 
         return { message_utilisateur: aiResponse, config: { route: 'conversation' } };
     } catch (error) {
         console.error('Erreur:', error);
-        return { message_utilisateur: `Intéressant ! Dis "ok" pour continuer.`, config: { route: 'conversation' } };
+        return { message_utilisateur: `Je vous écoute. Que souhaitez-vous faire ?`, config: { route: 'conversation' } };
     }
 }
 
@@ -263,7 +262,7 @@ async function handleGeneration(session, message) {
 
     // Construire le contexte complet du bien
     const propertyInfo = `
-Ville: ${city}
+Ville: ${city || '⚠️ NON PRÉCISÉE - Si le script mentionne une localisation, utilise UNIQUEMENT ce qui est fourni dans la description'}
 Description complète: ${description}
 Analyse photos: ${JSON.stringify(analysis, null, 2)}
 Standing: ${analysis.standing || 'Luxe'}
@@ -668,11 +667,11 @@ INSTRUCTIONS:
 }
 
 function extractCity(description) {
-    const cities = ['Saint-Gély-du-Fesc', 'Montpellier', 'Mougins', 'Cannes', 'Nice', 'Monaco', 'Paris', 'Lyon', 'Sainte-Maxime'];
+    const cities = ['Saint-Gély-du-Fesc', 'Montpellier', 'Mougins', 'Cannes', 'Nice', 'Monaco', 'Paris', 'Lyon', 'Sainte-Maxime', 'Belle-Île', 'Belle-Ile', 'Marseille', 'Bordeaux', 'Toulouse', 'Nantes', 'Biarritz', 'Saint-Tropez', 'Cap Ferret', 'Arcachon', 'La Baule', 'Deauville', 'Megève', 'Courchevel', 'Chamonix'];
     for (const city of cities) {
         if (description.toLowerCase().includes(city.toLowerCase())) return city;
     }
-    return 'Côte d\'Azur';
+    return null; // Ne pas inventer de localisation - l'IA demandera
 }
 
 /**
@@ -689,7 +688,10 @@ function formatText(text) {
 async function regenerate(session, instruction) {
     const propertyContext = session.property?.analysis?.fullSummary ||
         session.property?.description ||
-        'Bien immobilier de prestige';
+        '';
+
+    // Inclure les infos ajoutées par l'utilisateur (dont la localisation!)
+    const userInfo = session.additionalInfos?.length > 0 ? session.additionalInfos.join('\n') : '';
 
     const format = VIDEO_TYPES.find(f => f.id === session.config?.type_video) || VIDEO_TYPES[2];
     const ton = TONS.find(t => t.id === session.config?.ton) || TONS[0];
@@ -700,6 +702,9 @@ async function regenerate(session, instruction) {
 CONTEXTE DU BIEN :
 ${propertyContext}
 
+INFORMATIONS AJOUTÉES PAR L'UTILISATEUR (TRÈS IMPORTANT) :
+${userInfo || 'Aucune information supplémentaire'}
+
 FORMAT: ${format.name} (${format.duration}) | TON: ${ton.name} | LOOP: ${loopEnabled ? 'OUI' : 'NON'}
 
 SCRIPT ACTUEL :
@@ -707,6 +712,23 @@ ${session.generatedScript}
 
 MODIFICATION DEMANDÉE :
 ${instruction}
+
+═══════════════════════════════════════════════════════════════════
+⚠️ RÈGLES ANTI-HALLUCINATION - TRÈS IMPORTANT
+═══════════════════════════════════════════════════════════════════
+
+❌ N'INVENTE JAMAIS :
+- Une ville/région/localisation non mentionnée par l'utilisateur
+- Une surface non fournie  
+- Un prix non fourni
+- Des caractéristiques non visibles ou non mentionnées
+
+✅ UTILISE UNIQUEMENT les informations fournies dans :
+1. Le contexte du bien
+2. Les informations ajoutées par l'utilisateur (ci-dessus)
+3. Le script actuel
+
+Si une localisation est mentionnée dans "INFORMATIONS AJOUTÉES", UTILISE-LA !
 
 ═══════════════════════════════════════════════════════════════════
 ⚠️ FORMAT OBLIGATOIRE - NE PAS CHANGER LA STRUCTURE

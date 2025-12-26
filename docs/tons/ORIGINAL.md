@@ -1,76 +1,67 @@
 # TON ORIGINAL - Bonaparte IA
 
-Le ton ORIGINAL = **naturel, fluide, humain**.
-Comme si un agent immobilier parlait à un client.
+**L'essence** : Storytelling. Immersion. On raconte une histoire, pas une liste.
 
 ---
 
-## RÈGLE D'OR
+## CE QUI REND ORIGINAL UNIQUE
 
-**Chaque phrase doit pouvoir être lue à voix haute, de manière fluide.**
+Le ton Original transforme une visite en **expérience narrative**.
+Le spectateur ne regarde pas une propriété, il la **vit**.
 
----
-
-## ❌ INTERDIT
-
-| ❌ Télégraphique | Pourquoi c'est nul |
-|-----------------|-------------------|
-| "Le séjour. Vaste. Lumineux." | Pas une phrase |
-| "Cuisine équipée. Ouverte." | Style checklist |
-| "On entre. On monte. On descend." | GPS, pas description |
-| "4 chambres. 2 bains. Vue." | Liste de features |
+**Vocabulaire** : sensoriel, temporel, émotionnel
+**Rythme** : varié, comme une respiration
+**Émotion** : curiosité, connexion personnelle
 
 ---
 
-## ✅ OBLIGATOIRE
+## EXEMPLES ORIGINAL
 
-| ✅ Magazine | Pourquoi c'est bien |
-|------------|---------------------|
-| "Le séjour est vaste et baigné de lumière naturelle." | Phrase complète |
-| "La cuisine est équipée et ouverte sur les espaces de vie." | Fluide |
-| "À l'étage, deux chambres dont une suite parentale avec salle de bains." | Descriptif du bien |
+**Hook d'ouverture :**
 
----
+- "Il y a des maisons qu'on visite. Et il y a celle-ci."
+- "On pousse la porte. Le silence d'abord."
+- "Imaginez vous réveiller ici."
+- "Cette maison a une histoire. La voici."
 
-## Comment écrire
+**Séquences intérieures :**
 
-1. **Phrases complètes** : Sujet + verbe + complément
-2. **Décrire le BIEN** : Pas le mouvement caméra
-3. **Connecteurs naturels** : "et", "avec", "dont", "qui donne sur"
-4. **Lisible à voix haute** : Si ça sonne bizarre, réécris
-
----
-
-## Exemples par type de séquence
-
-**Ouverture :**
-
-- "Une villa de [surface] avec vue sur [élément]."
-- "[Ville]. [Type de bien] dans un quartier [caractéristique]."
-
-**Intérieur :**
-
-- "Le séjour s'ouvre sur une terrasse avec vue dégagée."
-- "La cuisine est équipée et communique avec la salle à manger."
-- "À l'étage, [nombre] chambres dont une suite avec salle de bains privative."
-
-**Extérieur :**
-
-- "Le jardin de [surface] est entièrement paysager."
-- "La piscine offre une vue sur [élément]."
+- "La lumière entre par le Sud. Elle ne partira pas avant 18h."
+- "Depuis la cuisine, on surveille les enfants dans le jardin."
+- "Cette suite ? C'est là que tout s'arrête le soir."
+- "Le bureau donne sur les arbres. Parfait pour les visios."
 
 **Conclusion :**
 
-- "[Surface]. [Nombre] pièces. [Prix]."
+- "280 m². Mougins. Et le début de quelque chose."
+- "[Prix]. La suite se passe en DM."
 
 ---
 
-## Validation
+## CE QUI N'EST PAS ORIGINAL
 
-Un script ORIGINAL est bon si :
+❌ "Villa de 280 m² avec 4 chambres et piscine."
+❌ Listes de caractéristiques
+❌ Ton neutre et descriptif
 
-- On peut le lire comme un article de magazine immobilier
-- Aucune phrase n'est un mot isolé ou un groupe nominal
-- Le texte décrit le bien, pas le parcours caméra
+---
 
-**VOUVOIEMENT OBLIGATOIRE**
+## EXEMPLES DE TRANSFORMATION
+
+| Version basique | Version ORIGINAL |
+|-----------------|------------------|
+| "Grand séjour lumineux" | "La lumière fait le reste" |
+| "Cuisine équipée" | "On cuisine ici en regardant le jardin" |
+| "4 chambres" | "Une chambre par enfant. Plus la vôtre." |
+| "Piscine" | "L'été, tout se passe ici." |
+
+---
+
+## VALIDATION
+
+Un script ORIGINAL est réussi si :
+
+- On a envie de voir la suite
+- Ce n'est pas une liste de features
+- On ressent quelque chose en le lisant
+- C'est unique, pas générique

@@ -393,7 +393,6 @@
             font-size: 0.75rem;
             font-weight: 600;
             letter-spacing: 0.05em;
-            text-transform: uppercase;
             color: var(--bp-desert);
         }
 
@@ -1141,6 +1140,202 @@
             border-radius: 8px;
             border-left: 3px solid #4CAF50;
         }
+
+        /* ========================================
+           MOBILE OPTIMIZATION - PHONES < 480px
+           ======================================== */
+        @media (max-width: 480px) {
+
+            /* Safe area for notched phones (iPhone X+) */
+            .app-container {
+                padding-bottom: env(safe-area-inset-bottom, 0);
+            }
+
+            .input-area {
+                padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom, 0));
+            }
+
+            /* Header compact */
+            .header {
+                padding: var(--space-sm) var(--space-md);
+            }
+
+            .logo-icon {
+                width: 32px;
+                height: 32px;
+            }
+
+            .logo-title {
+                font-size: 1.2rem;
+                letter-spacing: 0.08em;
+            }
+
+            .logo-subtitle {
+                font-size: 0.6rem;
+            }
+
+            .status-text {
+                font-size: 0.7rem;
+            }
+
+            /* Input area touch-friendly */
+            .upload-button,
+            .doc-upload-button,
+            .send-button {
+                width: 48px !important;
+                height: 48px !important;
+                min-width: 48px;
+                min-height: 48px;
+            }
+
+            .upload-button svg,
+            .doc-upload-button svg,
+            .send-button svg {
+                width: 22px;
+                height: 22px;
+            }
+
+            .input-wrapper textarea {
+                font-size: 16px;
+                /* Prevents iOS zoom on focus */
+            }
+
+            .input-wrapper {
+                padding: var(--space-sm);
+                gap: var(--space-xs);
+            }
+
+            /* Hide keyboard hints on mobile */
+            .input-hint {
+                display: none;
+            }
+
+            /* Config buttons larger for touch */
+            .config-btn {
+                min-width: 75px;
+                min-height: 44px;
+                padding: var(--space-sm);
+                font-size: 0.75rem;
+            }
+
+            .config-panel-content {
+                padding: var(--space-sm);
+            }
+
+            /* Image preview - always show remove button on mobile */
+            .image-preview-item .remove-image {
+                opacity: 1 !important;
+                width: 26px;
+                height: 26px;
+                font-size: 14px;
+            }
+
+            .image-preview-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+
+            /* Messages */
+            .message-content {
+                padding: var(--space-sm) var(--space-md);
+            }
+
+            .message-text {
+                font-size: 0.9rem;
+                line-height: 1.6;
+            }
+
+            .message-avatar {
+                width: 32px;
+                height: 32px;
+            }
+
+            /* Export buttons touch-friendly */
+            .export-btn {
+                min-height: 44px;
+                font-size: 0.8rem;
+                padding: var(--space-sm) var(--space-md);
+            }
+
+            .export-panel {
+                flex-direction: column;
+            }
+
+            .export-btn {
+                width: 100%;
+            }
+
+            /* Generate button */
+            .generate-btn {
+                min-height: 50px;
+                font-size: 1rem;
+            }
+
+            /* Welcome message compact */
+            .welcome-title {
+                font-size: 1.15rem;
+            }
+
+            .welcome-step {
+                padding: var(--space-xs) var(--space-sm);
+            }
+
+            .step-text {
+                font-size: 0.8rem;
+            }
+
+            /* Feedback textarea */
+            .feedback-input {
+                font-size: 16px;
+                /* Prevents iOS zoom */
+            }
+
+            /* Post-gen panel buttons */
+            .config-buttons {
+                gap: 6px;
+            }
+        }
+
+        /* ========================================
+           VERY SMALL PHONES < 360px
+           ======================================== */
+        @media (max-width: 360px) {
+            .logo-section {
+                gap: var(--space-sm);
+            }
+
+            .logo-title {
+                font-size: 1rem;
+            }
+
+            .logo-subtitle {
+                display: none;
+            }
+
+            /* Stack config buttons vertically */
+            .config-buttons {
+                flex-direction: column;
+            }
+
+            .config-btn {
+                width: 100%;
+                min-height: 48px;
+            }
+
+            /* 2 column image grid */
+            .image-preview-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            /* Smaller message bubbles */
+            .message {
+                max-width: 98%;
+            }
+
+            .message-content {
+                padding: var(--space-xs) var(--space-sm);
+            }
+        }
     </style>
 </head>
 
@@ -1363,8 +1558,9 @@
                             stroke-linecap="round" />
                     </svg>
                 </button>
-                <input type="file" id="imageInput" class="hidden-input" multiple accept="image/*">
-                <input type="file" id="docInput" class="hidden-input" multiple accept=".pdf,.txt,.doc,.docx">
+                <input type="file" id="imageInput" class="hidden-input" multiple accept="image/*" capture="environment">
+                <input type="file" id="docInput" class="hidden-input" multiple
+                    accept=".pdf,.txt,.doc,.docx,application/pdf,text/plain">
 
                 <textarea id="messageInput" placeholder="Décrivez votre bien : adresse, surface, pièces, atouts..."
                     rows="1"></textarea>
@@ -2049,6 +2245,29 @@
         }
 
         // =====================================================
+        // SHOW CONFIG PANEL
+        // =====================================================
+        function showConfigPanel() {
+            const configPanel = document.getElementById('configPanel');
+            const postGenPanel = document.getElementById('postGenPanel');
+
+            if (configPanel) {
+                configPanel.style.display = 'block';
+                configPanel.classList.remove('collapsed');
+            }
+            if (postGenPanel) {
+                postGenPanel.style.display = 'none';
+            }
+
+            // Scroll to the config panel
+            setTimeout(() => {
+                if (configPanel) {
+                    configPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        }
+
+        // =====================================================
         // PDF EXPORT
         // =====================================================
         async function exportPDF() {
@@ -2080,149 +2299,50 @@
         }
 
         function generatePDF(scriptContent, metadata) {
-            // Créer un document PDF avec le contenu bien formaté
-            const printWindow = window.open('', '_blank');
-
             // Fonction pour convertir le markdown en HTML
             function formatScriptForPDF(text) {
                 if (!text) return '';
                 return text
-                    // Convertir les titres **texte** en <strong>
                     .replace(/\*\*\[([^\]]+)\]\*\*/g, '<h3 style="color: #B8A88A; margin-top: 20px; margin-bottom: 10px;">$1</h3>')
                     .replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #B8A88A;">$1</strong>')
-                    // Convertir les italiques *texte* en <em> (pour les plans)
                     .replace(/\*Plan: ([^*]+)\*/g, '<p style="color: #666; font-style: italic; margin-left: 20px; margin-bottom: 15px;">📹 Plan: $1</p>')
                     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-                    // Convertir les sauts de ligne
                     .replace(/\n---\n/g, '<hr style="margin: 25px 0; border: none; border-top: 2px solid #B8A88A;">')
                     .replace(/\n/g, '<br>')
-                    // Nettoyer les doubles <br>
                     .replace(/<br><br>/g, '<br><br>');
             }
 
-            const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Script Bonaparte - ${new Date().toLocaleDateString('fr-FR')}</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500&display=swap');
-        
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 11pt;
-            line-height: 1.6;
-            color: #1a1612;
-            padding: 40px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #B8A88A;
-        }
-        
-        .header h1 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 28pt;
-            font-weight: 500;
-            letter-spacing: 0.2em;
-            color: #1a1612;
-            margin-bottom: 5px;
-        }
-        
-        .header p {
-            font-size: 9pt;
-            color: #504838;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-        }
-        
-        .metadata {
-            background: #FAF8F5;
-            padding: 15px;
-            margin-bottom: 25px;
-            border-left: 3px solid #B8A88A;
-        }
-        
-        .metadata p {
-            font-size: 9pt;
-            color: #504838;
-            margin-bottom: 4px;
-        }
-        
-        .script-content {
-            font-size: 10pt;
-            line-height: 1.8;
-        }
-        
-        .script-content strong {
-            color: #B8A88A;
-            font-weight: 600;
-        }
-        
-        .script-content h3 {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 14pt;
-            color: #B8A88A;
-            margin-top: 25px;
-            margin-bottom: 10px;
-            border-bottom: 1px solid #e0d9cc;
-            padding-bottom: 5px;
-        }
-        
-        hr {
-            border: none;
-            border-top: 1px solid #B8A88A;
-            margin: 20px 0;
-        }
-        
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #B8A88A;
-            text-align: center;
-            font-size: 8pt;
-            color: #504838;
-        }
-        
-        @media print {
-            body { padding: 20px; }
-            .no-print { display: none; }
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>BONAPARTE</h1>
-        <p>Script Vidéo</p>
-    </div>
-    
-    <div class="metadata">
-        <p><strong>Généré le :</strong> ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p>
-    </div>
-    
-    <div class="script-content">${formatScriptForPDF(scriptContent)}</div>
-    
-    <div class="footer">
-        <p>Maison Bonaparte — Script généré par Bonaparte IA</p>
-    </div>
-    
-    <div class="no-print" style="margin-top: 30px; text-align: center;">
-        <button onclick="window.print()" style="padding: 12px 30px; background: #B8A88A; color: white; border: none; border-radius: 8px; cursor: pointer; font-family: 'Montserrat', sans-serif; font-size: 12pt;">
-            Imprimer / Enregistrer PDF
-        </button>
-    </div>
-</body>
-</html>`;
+            const htmlContent = `<!DOCTYPE html><html><head><title>Script Bonaparte - ${new Date().toLocaleDateString('fr-FR')}</title><style>@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@300;400;500&display=swap');*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Montserrat',sans-serif;font-size:11pt;line-height:1.6;color:#1a1612;padding:40px;max-width:800px;margin:0 auto}.header{text-align:center;margin-bottom:30px;padding-bottom:20px;border-bottom:2px solid #B8A88A}.header h1{font-family:'Cormorant Garamond',serif;font-size:28pt;font-weight:500;letter-spacing:0.2em;color:#1a1612;margin-bottom:5px}.header p{font-size:9pt;color:#504838;letter-spacing:0.1em;text-transform:uppercase}.metadata{background:#FAF8F5;padding:15px;margin-bottom:25px;border-left:3px solid #B8A88A}.metadata p{font-size:9pt;color:#504838;margin-bottom:4px}.script-content{font-size:10pt;line-height:1.8}.script-content strong{color:#B8A88A;font-weight:600}.script-content h3{font-family:'Cormorant Garamond',serif;font-size:14pt;color:#B8A88A;margin-top:25px;margin-bottom:10px;border-bottom:1px solid #e0d9cc;padding-bottom:5px}hr{border:none;border-top:1px solid #B8A88A;margin:20px 0}.footer{margin-top:40px;padding-top:20px;border-top:1px solid #B8A88A;text-align:center;font-size:8pt;color:#504838}@media print{body{padding:20px}.no-print{display:none}}</style></head><body><div class="header"><h1>Bonaparte</h1><p>Script Vidéo</p></div><div class="metadata"><p><strong>Généré le :</strong> ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}</p></div><div class="script-content">${formatScriptForPDF(scriptContent)}</div><div class="footer"><p>Maison Bonaparte — Script généré par Bonaparte IA</p></div><div class="no-print" style="margin-top:30px;text-align:center;"><button onclick="window.print()" style="padding:12px 30px;background:#B8A88A;color:white;border:none;border-radius:8px;cursor:pointer;font-family:'Montserrat',sans-serif;font-size:12pt;">Imprimer / Enregistrer PDF</button></div></body></html>`;
 
-            printWindow.document.write(htmlContent);
-            printWindow.document.close();
+            // Solution compatible mobile : utiliser un iframe caché au lieu de window.open
+            let printFrame = document.getElementById('bonapartePrintFrame');
+            if (!printFrame) {
+                printFrame = document.createElement('iframe');
+                printFrame.id = 'bonapartePrintFrame';
+                printFrame.name = 'bonapartePrintFrame';
+                printFrame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+                document.body.appendChild(printFrame);
+            }
+
+            const frameDoc = printFrame.contentWindow || printFrame.contentDocument;
+            const doc = frameDoc.document || frameDoc;
+
+            doc.open();
+            doc.write(htmlContent);
+            doc.close();
+
+            // Attendre le chargement complet avant d'imprimer
+            setTimeout(() => {
+                try {
+                    printFrame.contentWindow.focus();
+                    printFrame.contentWindow.print();
+                } catch (e) {
+                    // Fallback: ouvrir dans un nouvel onglet si l'iframe ne fonctionne pas
+                    const blob = new Blob([htmlContent], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                }
+            }, 500);
         }
 
         // Expose export function globally
