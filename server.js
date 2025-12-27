@@ -123,10 +123,12 @@ app.post('/api/bien/upload', upload.array('images', 15), async (req, res) => {
         const existingUrls = session.property.imageUrls || [];
         session.property.imageUrls = [...existingUrls, ...newUrls];
 
-        // Flag pour signaler de nouvelles images si script déjà généré
-        if (session.generatedScript) {
+        // Flag pour signaler de nouvelles images APRÈS l'analyse initiale
+        // (peu importe si le script a été généré ou non)
+        if (session.photoSummaryDone) {
             session.property.newImageUploaded = true;
-            console.log('📌 Flag newImageUploaded activé (post-génération)');
+            session.property.newImageCount = newUrls.length;
+            console.log(`📌 Flag newImageUploaded activé (${newUrls.length} nouvelles images après analyse)`);
         }
 
         console.log(`✅ ${uploadResults.length} images uploadées (total: ${session.property.imageUrls.length})`);
@@ -172,11 +174,11 @@ app.post('/api/bien/documents', upload.array('documents', 10), async (req, res) 
         session.property.documentsCount = req.files.length;
         session.property.documentsNames = req.files.map(f => f.originalname);
 
-        // Flag pour signaler à l'agent SEULEMENT si script déjà généré
-        // (sinon c'est l'upload initial qui fait partie du flow normal)
-        if (session.generatedScript) {
+        // Flag pour signaler de nouveaux documents APRÈS l'analyse initiale
+        // (peu importe si le script a été généré ou non)
+        if (session.photoSummaryDone) {
             session.property.newDocumentUploaded = true;
-            console.log('📌 Flag newDocumentUploaded activé (post-génération)');
+            console.log(`📌 Flag newDocumentUploaded activé (après analyse)`);
         }
 
         console.log(`✅ ${req.files.length} documents parsés (${documentsText.length} caractères extraits)`);

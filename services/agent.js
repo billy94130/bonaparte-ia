@@ -156,20 +156,52 @@ async function handlePhotoSummary(session) {
 }
 
 async function handleConversation(session, message) {
-    if (!message || !message.trim()) {
-        return { message_utilisateur: `Je vous écoute. Dites-moi ce que vous souhaitez.`, config: { route: 'conversation' } };
-    }
-
     session.conversationHistory = session.conversationHistory || [];
     session.additionalInfos = session.additionalInfos || [];
     session.conversationCount = (session.conversationCount || 0) + 1;
 
+    // Détecter si de nouveaux médias ont été ajoutés
+    const newImageCount = session.property.newImageCount || 0;
+    const hasNewImages = session.property.newImageUploaded === true;
+    const hasNewDocs = session.property.newDocumentUploaded === true;
+
+    // Réinitialiser les flags après détection
+    if (hasNewImages) {
+        session.property.newImageUploaded = false;
+        session.property.newImageCount = 0;
+    }
+    if (hasNewDocs) {
+        session.property.newDocumentUploaded = false;
+    }
+
+    // Si nouveaux médias détectés, confirmer à l'utilisateur
+    if (hasNewImages || hasNewDocs) {
+        let confirmationMsg = '';
+        if (hasNewImages && hasNewDocs) {
+            confirmationMsg = `Parfait, j'ai bien reçu ${newImageCount} nouvelle(s) photo(s) et vos documents. Je les prends en compte pour le script. Y a-t-il autre chose à ajouter ?`;
+        } else if (hasNewImages) {
+            confirmationMsg = `C'est noté ! ${newImageCount} nouvelle(s) photo(s) ajoutée(s). Je les intégrerai dans le script. Autre chose ?`;
+        } else {
+            confirmationMsg = `Documents bien reçus et analysés. Je les prends en compte. Autre chose à ajouter ?`;
+        }
+
+        session.conversationHistory.push({ role: 'assistant', content: confirmationMsg });
+        return { message_utilisateur: confirmationMsg, config: { route: 'conversation' } };
+    }
+
+    // Si message vide et pas de nouveaux médias
+    if (!message || !message.trim()) {
+        return { message_utilisateur: `Je vous écoute. Que souhaitez-vous faire ?`, config: { route: 'conversation' } };
+    }
+
     session.conversationHistory.push({ role: 'user', content: message.trim() });
 
     try {
-        // Contexte du bien
+        // Contexte du bien (inclut le nombre total d'images)
+        const totalImages = session.property.imageUrls?.length || 0;
         const propertyContext = `
 Bien: ${session.property.description || 'Propriété de prestige'}
+Photos: ${totalImages} images au total
 Analyse: ${session.photoSummary ? 'Photos analysées' : 'En cours'}
 Infos ajoutées: ${session.additionalInfos.join(', ') || 'Aucune'}
 `;
@@ -193,6 +225,7 @@ Tu dois répondre naturellement à l'utilisateur.
 
 ANALYSE SON INTENTION :
 - S'il ajoute une info sur le bien → note-la et demande s'il y a autre chose
+- S'il mentionne avoir ajouté des photos/images → confirme que tu les as bien reçues
 - S'il veut passer à la génération/configuration/choisir format/ton → réponds "SHOW_CONFIG" (exactement ce mot seul)
 - S'il pose une question → réponds naturellement
 - S'il n'a plus rien à ajouter → propose de passer à la configuration
