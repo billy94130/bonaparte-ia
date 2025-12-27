@@ -165,6 +165,11 @@ async function handleConversation(session, message) {
     const hasNewImages = session.property.newImageUploaded === true;
     const hasNewDocs = session.property.newDocumentUploaded === true;
 
+    // Récupérer les nouvelles URLs d'images (les dernières ajoutées)
+    const newImageUrls = hasNewImages && newImageCount > 0
+        ? session.property.imageUrls.slice(-newImageCount)
+        : [];
+
     // Réinitialiser les flags après détection
     if (hasNewImages) {
         session.property.newImageUploaded = false;
@@ -174,87 +179,119 @@ async function handleConversation(session, message) {
         session.property.newDocumentUploaded = false;
     }
 
-    // Si nouveaux médias détectés, confirmer à l'utilisateur
-    if (hasNewImages || hasNewDocs) {
-        let confirmationMsg = '';
-        if (hasNewImages && hasNewDocs) {
-            confirmationMsg = `Parfait, j'ai bien reçu ${newImageCount} nouvelle(s) photo(s) et vos documents. Je les prends en compte pour le script. Y a-t-il autre chose à ajouter ?`;
-        } else if (hasNewImages) {
-            confirmationMsg = `C'est noté ! ${newImageCount} nouvelle(s) photo(s) ajoutée(s). Je les intégrerai dans le script. Autre chose ?`;
-        } else {
-            confirmationMsg = `Documents bien reçus et analysés. Je les prends en compte. Autre chose à ajouter ?`;
-        }
+    // Si nouvelles images, les ANALYSER avec Vision
+    if (hasNewImages && newImageUrls.length > 0) {
+        try {
+            console.log(`🔍 Analyse Vision de ${newImageUrls.length} nouvelles images...`);
 
-        session.conversationHistory.push({ role: 'assistant', content: confirmationMsg });
-        return { message_utilisateur: confirmationMsg, config: { route: 'conversation' } };
+            // Appel Vision pour analyser les nouvelles images
+            const visionService = require('./vision');
+            const newAnalysis = await visionService.analyzeProperty(newImageUrls, message || '');
+
+            // Extraire le résumé de l'analyse
+            let analysisText = '';
+            if (newAnalysis && newAnalysis.description) {
+                analysisText = newAnalysis.description;
+            } else if (typeof newAnalysis === 'string') {
+                analysisText = newAnalysis;
+            }
+
+            // Stocker l'info extraite
+            if (analysisText) {
+                session.additionalInfos.push(analysisText);
+            }
+
+            // Réponse simple et naturelle avec les infos extraites
+            const shortAnalysis = analysisText.length > 200
+                ? analysisText.substring(0, 200) + '...'
+                : analysisText;
+
+            const response = shortAnalysis
+                ? `J'ai analysé la photo. ${shortAnalysis} Autre chose ?`
+                : `Photo ajoutée. Autre chose ?`;
+
+            session.conversationHistory.push({ role: 'assistant', content: response });
+            return { message_utilisateur: response, config: { route: 'conversation' } };
+
+        } catch (error) {
+            console.error('Erreur analyse nouvelles images:', error);
+            const response = `Photo ajoutée. Autre chose ?`;
+            session.conversationHistory.push({ role: 'assistant', content: response });
+            return { message_utilisateur: response, config: { route: 'conversation' } };
+        }
     }
 
-    // Si message vide et pas de nouveaux médias
+    // Si nouveaux documents
+    if (hasNewDocs) {
+        const docText = session.property.documentsText || '';
+        const shortText = docText.length > 200 ? docText.substring(0, 200) + '...' : docText;
+        const response = shortText
+            ? `Document analysé. J'ai noté : ${shortText} Autre chose ?`
+            : `Document reçu. Autre chose ?`;
+        session.conversationHistory.push({ role: 'assistant', content: response });
+        return { message_utilisateur: response, config: { route: 'conversation' } };
+    }
+
+    // Si message vide
     if (!message || !message.trim()) {
-        return { message_utilisateur: `Je vous écoute. Que souhaitez-vous faire ?`, config: { route: 'conversation' } };
+        return { message_utilisateur: `Je vous écoute.`, config: { route: 'conversation' } };
     }
 
     session.conversationHistory.push({ role: 'user', content: message.trim() });
 
     try {
-        // Contexte du bien (inclut le nombre total d'images)
         const totalImages = session.property.imageUrls?.length || 0;
         const propertyContext = `
-Bien: ${session.property.description || 'Propriété de prestige'}
-Photos: ${totalImages} images au total
-Analyse: ${session.photoSummary ? 'Photos analysées' : 'En cours'}
-Infos ajoutées: ${session.additionalInfos.join(', ') || 'Aucune'}
+Bien: ${session.property.description || 'Non décrit'}
+Photos: ${totalImages}
+Infos: ${session.additionalInfos.join(', ') || 'Aucune'}
 `;
 
-        const historyText = session.conversationHistory.map(m => `${m.role === 'user' ? 'User' : 'IA'}: ${m.content}`).join('\n');
+        const historyText = session.conversationHistory.slice(-6).map(m =>
+            `${m.role === 'user' ? 'User' : 'IA'}: ${m.content}`
+        ).join('\n');
 
-        // Prompt intelligent qui laisse l'IA décider
-        const conversationPrompt = `Tu es Bonaparte IA, expert en scripts vidéo Instagram pour l'immobilier.
+        // Prompt simple et direct
+        const conversationPrompt = `Tu es un assistant pour créer des scripts vidéo immobilier.
 
-CONTEXTE DU BIEN :
+CONTEXTE :
 ${propertyContext}
 
-HISTORIQUE :
+HISTORIQUE RÉCENT :
 ${historyText}
 
-MESSAGE DE L'UTILISATEUR : "${message.trim()}"
+MESSAGE : "${message.trim()}"
 
 ---
 
-Tu dois répondre naturellement à l'utilisateur.
+Réponds en 1-2 phrases courtes. Sois direct et naturel. Tutoie ou vouvoie selon le ton de l'utilisateur.
 
-ANALYSE SON INTENTION :
-- S'il ajoute une info sur le bien → note-la et demande s'il y a autre chose
-- S'il mentionne avoir ajouté des photos/images → confirme que tu les as bien reçues
-- S'il veut passer à la génération/configuration/choisir format/ton → réponds "SHOW_CONFIG" (exactement ce mot seul)
-- S'il pose une question → réponds naturellement
-- S'il n'a plus rien à ajouter → propose de passer à la configuration
+- Info sur le bien → "Noté." et demande si autre chose
+- Veut générer/choisir format → réponds UNIQUEMENT "SHOW_CONFIG"
+- Question → réponds simplement
+- Plus rien à ajouter → "On passe au script ?"`;
 
-Sois bref (2-3 phrases max), naturel, et vouvoie toujours.
-Utilise uniquement les informations fournies.`;
-
-        let aiResponse = await callClaude(conversationPrompt, 300);
+        let aiResponse = await callClaude(conversationPrompt, 150);
         aiResponse = formatText(aiResponse);
 
-        // Si l'IA détecte que l'utilisateur veut passer à la config
         if (aiResponse.includes('SHOW_CONFIG') || aiResponse.trim() === 'SHOW_CONFIG') {
             session.readyForConfig = true;
             return handleConfiguration(session, '');
         }
 
-        // Sinon, ajouter aux infos si c'est pertinent (pas juste une question)
         if (!message.trim().endsWith('?')) {
             session.additionalInfos.push(message.trim());
         }
 
         session.conversationHistory.push({ role: 'assistant', content: aiResponse });
-
         return { message_utilisateur: aiResponse, config: { route: 'conversation' } };
+
     } catch (error) {
         console.error('Erreur:', error);
-        return { message_utilisateur: `Je vous écoute. Que souhaitez-vous faire ?`, config: { route: 'conversation' } };
+        return { message_utilisateur: `Compris. Autre chose ?`, config: { route: 'conversation' } };
     }
 }
+
 
 function handleConfiguration(session, message) {
     const lower = (message || '').toLowerCase();
