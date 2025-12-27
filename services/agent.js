@@ -188,12 +188,37 @@ async function handleConversation(session, message) {
             const visionService = require('./vision');
             const newAnalysis = await visionService.analyzeProperty(newImageUrls, message || '');
 
-            // Extraire le résumé de l'analyse
+            // Extraire les infos clés de l'analyse Vision (format JSON)
             let analysisText = '';
-            if (newAnalysis && newAnalysis.description) {
-                analysisText = newAnalysis.description;
-            } else if (typeof newAnalysis === 'string') {
-                analysisText = newAnalysis;
+            if (newAnalysis) {
+                const parts = [];
+
+                // Pièces identifiées
+                if (newAnalysis.pieces_identifiees && newAnalysis.pieces_identifiees.length > 0) {
+                    parts.push(`Pièces: ${newAnalysis.pieces_identifiees.join(', ')}`);
+                }
+
+                // Points forts
+                if (newAnalysis.points_forts && newAnalysis.points_forts.length > 0) {
+                    parts.push(`Atouts: ${newAnalysis.points_forts.slice(0, 3).join(', ')}`);
+                }
+
+                // Matériaux
+                if (newAnalysis.materiaux && newAnalysis.materiaux.length > 0) {
+                    parts.push(`Matériaux: ${newAnalysis.materiaux.slice(0, 3).join(', ')}`);
+                }
+
+                // Vues
+                if (newAnalysis.vues) {
+                    parts.push(`Vue: ${newAnalysis.vues}`);
+                }
+
+                // Si raw_response (parsing JSON échoué), l'utiliser
+                if (parts.length === 0 && newAnalysis.raw_response) {
+                    analysisText = newAnalysis.raw_response.substring(0, 150);
+                } else {
+                    analysisText = parts.join('. ');
+                }
             }
 
             // Stocker l'info extraite
@@ -201,21 +226,17 @@ async function handleConversation(session, message) {
                 session.additionalInfos.push(analysisText);
             }
 
-            // Réponse simple et naturelle avec les infos extraites
-            const shortAnalysis = analysisText.length > 200
-                ? analysisText.substring(0, 200) + '...'
-                : analysisText;
-
-            const response = shortAnalysis
-                ? `J'ai analysé la photo. ${shortAnalysis} Autre chose ?`
-                : `Photo ajoutée. Autre chose ?`;
+            // Réponse simple avec les infos
+            const response = analysisText
+                ? `J'ai vu : ${analysisText}. Autre chose ?`
+                : `Photo reçue. Autre chose ?`;
 
             session.conversationHistory.push({ role: 'assistant', content: response });
             return { message_utilisateur: response, config: { route: 'conversation' } };
 
         } catch (error) {
             console.error('Erreur analyse nouvelles images:', error);
-            const response = `Photo ajoutée. Autre chose ?`;
+            const response = `Photo reçue. Autre chose ?`;
             session.conversationHistory.push({ role: 'assistant', content: response });
             return { message_utilisateur: response, config: { route: 'conversation' } };
         }

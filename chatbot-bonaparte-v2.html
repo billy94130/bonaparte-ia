@@ -1280,17 +1280,34 @@
                 font-size: 0.8rem;
             }
 
-            /* Config buttons larger for touch */
+            /* Config buttons - Smaller and better spaced for mobile */
             .config-btn {
-                min-width: 80px;
-                min-height: 46px;
-                padding: var(--space-sm) var(--space-md);
-                font-size: 0.8rem;
-                border-radius: 10px;
+                min-width: 70px;
+                min-height: 38px;
+                padding: 8px 12px;
+                font-size: 0.75rem;
+                border-radius: 8px;
+            }
+
+            .config-buttons {
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            .config-section {
+                margin-bottom: 16px;
             }
 
             .config-panel-content {
-                padding: var(--space-md);
+                padding: 12px;
+            }
+
+            /* Export buttons - Smaller */
+            .generate-btn {
+                min-height: 44px;
+                font-size: 0.9rem;
+                border-radius: 10px;
+                margin-bottom: 8px;
             }
 
             /* Image preview - always show remove button on mobile */

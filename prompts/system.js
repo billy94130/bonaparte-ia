@@ -229,6 +229,15 @@ PRINCIPES :
 - "Au cœur de", "idéalement situé", "à proximité immédiate"
 - "Cadre verdoyant", "coup de cœur", "rare sur le marché"
 
+INTERDIT ABSOLUMENT dans le script :
+- "DM", "en DM", "dans nos DM", "envoyez-nous un message"
+- "Lien en bio", "link in bio", "clique sur le lien"
+- "Contactez-nous", "appelez-nous", "plus d'infos"
+- "La suite en DM", "Pour visiter"
+- Tout appel à l'action type marketing
+
+→ Le script décrit le bien, POINT. Pas de CTA.
+
 → Remplace chaque cliché par une formulation UNIQUE et CONCRÈTE.
 
 VALIDATION : Si ta phrase ressemble à une annonce classique, réécris-la.
